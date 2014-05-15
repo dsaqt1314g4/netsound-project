@@ -6,6 +6,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 public class NetsoundApplication extends ResourceConfig {
 	public NetsoundApplication() {
 		super();
-		register(DeclarativeLinkingFeature.class);
+		register(DeclarativeLinkingFeature.class);   
 	}
 }
