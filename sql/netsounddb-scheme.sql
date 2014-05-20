@@ -3,7 +3,7 @@ create database netsounddb;
  
 use netsounddb;
  
-create table Users (
+create table Users ( 
 userid		int not null auto_increment primary key,
 username	varchar(20) not null,
 name	varchar(70) not null,
