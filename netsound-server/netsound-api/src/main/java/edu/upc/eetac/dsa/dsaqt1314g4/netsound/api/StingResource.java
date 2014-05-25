@@ -18,38 +18,44 @@ import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.StingCollection;
 
 @Path("/stings")
 public class StingResource {
-	
+
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
-	
-	@Path("/{profileid}")
+
+	@Path("/profile/{profileid}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
-	public StingCollection getUserStings(@PathParam("profileid") String profileid){
+	public StingCollection getUserStings(
+			@PathParam("profileid") String profileid) {
 		StingCollection stings = new StingCollection();
 		stings = getStingsFromDatabaseByQuery(buildGetUserIdStings(), profileid);
 		return stings;
-		
+
 	}
+
 	private String buildGetUserIdStings() {
-		
+
 		return "select s.* from Stings s, StingsRelation r where s.stingid = r.stingid and r.userid = ?";
 	}
-	
-	@Path("/{profileid}/following")
+
+	@Path("/profile/{profileid}/following")
 	@GET
 	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
-	public StingCollection getUserFollowingStings(@PathParam("profileid") String profileid){
+	public StingCollection getUserFollowingStings(
+			@PathParam("profileid") String profileid) {
 		StingCollection stings = new StingCollection();
-		stings = getStingsFromDatabaseByQuery(buildGetFollowingStings(), profileid);
+		stings = getStingsFromDatabaseByQuery(buildGetFollowingStings(),
+				profileid);
 		return stings;
-		
-		
+
 	}
+
 	private String buildGetFollowingStings() {
-		
+
 		return "select s.* from Stings s, StingsRelation r, Follow f where s.stingid=r.stingid and r.userid=f.followingid and f.followerid = ?;";
 	}
-	private StingCollection getStingsFromDatabaseByQuery(String Query, String profileid){
+
+	private StingCollection getStingsFromDatabaseByQuery(String Query,
+			String profileid) {
 		StingCollection stings = new StingCollection();
 		Connection conn = null;
 		try {
@@ -70,7 +76,8 @@ public class StingResource {
 				Sting sting = new Sting();
 				sting.setStingid(String.valueOf(rs.getInt("stingid")));
 				sting.setContent(rs.getString("content"));
-				sting.setLastModified(rs.getTimestamp("last_modified").getTime());
+				sting.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
 				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
 				sting.setLastModified(oldestTimestamp);
 				if (first) {
@@ -92,6 +99,51 @@ public class StingResource {
 			}
 		}
 		return stings;
-		
+
+	}
+
+	@Path("/{stingid}")
+	@GET
+	@Produces(MediaType.NETSOUND_API_STING)
+	public Sting getSting(@PathParam("stingid") String stingid) {
+		Sting sting = new Sting();
+
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetStingById());
+			stmt.setInt(1, Integer.valueOf(stingid));
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				sting.setStingid(String.valueOf(rs.getInt("stingid")));
+				sting.setContent(rs.getString("content"));
+				sting.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
+
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return sting;
+	}
+
+	private String buildGetStingById() {
+
+		return "select * from Stings where stingid = ?";
 	}
 }

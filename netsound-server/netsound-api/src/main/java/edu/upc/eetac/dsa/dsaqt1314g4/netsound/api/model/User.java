@@ -10,6 +10,7 @@ public class User {
 	private String userid;
 	private String name;
 	private String description;
+	private String userpass;
 	public List<Link> getLinks() {
 		return links;
 	}
@@ -39,5 +40,11 @@ public class User {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	public String getUserpass() {
+		return userpass;
+	}
+	public void setUserpass(String userpass) {
+		this.userpass = userpass;
 	}
 }

@@ -5,8 +5,13 @@ maxActive="10" maxIdle="5" username="netsound" password="netsound"
 driverClassName="com.mysql.jdbc.Driver"
 url="jdbc:mysql://localhost:3306/netsounddb?autoReconnect=true" />
 
+<Resource name="jdbc/realmdb" auth="Container" type="javax.sql.DataSource"
+	maxActive="10" maxIdle="5" username="realm" password="realm"
+	driverClassName="com.mysql.jdbc.Driver"
+	url="jdbc:mysql://localhost:3306/realmdb?autoReconnect=true" />
+
 <Realm className="org.apache.catalina.realm.DataSourceRealm"
-	dataSourceName="jdbc/netsounddb" localDataSource="true" digest="MD5"
+	dataSourceName="jdbc/realmdb" localDataSource="true" digest="MD5"
 	userTable="users" userNameCol="username" userCredCol="userpass"
 	userRoleTable="user_roles" roleNameCol="rolename" />
 </Context>
