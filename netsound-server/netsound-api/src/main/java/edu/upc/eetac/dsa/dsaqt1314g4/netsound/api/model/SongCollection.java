@@ -17,7 +17,7 @@ public class SongCollection {
 		songs = new ArrayList<>();
 	}
 	
-	public void addSongg(Song song) {
+	public void addSong(Song song) {
 		songs.add(song);
 	}
 	
