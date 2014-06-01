@@ -69,6 +69,50 @@ public class UserResource {
 
 		return "select * from Users where userid = ?";
 	}
+	@Path("/name/{username}")
+	@GET
+	@Produces(MediaType.NETSOUND_API_USER)
+	public User getUserbyUsername(@PathParam("username") String username) {
+		User user = new User();
+
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetUserByUsername());
+			stmt.setString(1, username);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				user.setUserid(String.valueOf(rs.getInt("userid")));
+				user.setUsername(rs.getString("username"));
+				user.setName(rs.getString("name"));
+				user.setDescription(rs.getString("description"));
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return user;
+	}
+
+	private String buildGetUserByUsername() {
+
+		return "select * from Users where username = ?";
+	}
 
 	@Path("/{profileid}/following")
 	@GET

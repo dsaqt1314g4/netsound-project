@@ -123,7 +123,7 @@ public class PlaylistResource {
 			}
 		}
 
-		return ;
+		return following ;
 	}
 
 	private String buildGetFollowingById() {
@@ -134,7 +134,7 @@ public class PlaylistResource {
 	@POST
 	@Consumes(MediaType.NETSOUND_API_PLAYLIST)
 	@Produces(MediaType.NETSOUND_API_PLAYLIST)
-	public Playlist createPlaylist(Playlist playlist) {
+/*	public Playlist createPlaylist(Playlist playlist) {
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();

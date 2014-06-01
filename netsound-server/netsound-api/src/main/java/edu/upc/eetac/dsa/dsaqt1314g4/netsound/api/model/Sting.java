@@ -9,6 +9,8 @@ public class Sting {
 	private List<Link> links;
 	private String stingid;
 	private String content;
+	private String username;
+	private String userid;
 	private long lastModified;
 
 	public List<Link> getLinks() {
@@ -41,6 +43,22 @@ public class Sting {
 
 	public void setLastModified(long lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getUserid() {
+		return userid;
+	}
+
+	public void setUserid(String userid) {
+		this.userid = userid;
 	}
 
 }
