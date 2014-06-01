@@ -1,19 +1,27 @@
 package edu.upc.eetac.dsa.dsaqt1314g4.netsound.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.UUID;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sql.DataSource;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -29,6 +37,7 @@ import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.SongCollection;
 @Path("/songs")
 public class SongResource {
 	@Context
+	private Application app;
 	private SecurityContext security;
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 	
@@ -114,10 +123,6 @@ public class SongResource {
 		return song;
 	}
 
-	private String buildGetBookByIdQuery() {
-		return "select * from book where idbook = ?";
-	}
-	
 	private Song getSongFromDatabase(String songid) {
 		Song song = new Song();
 
@@ -167,4 +172,30 @@ public class SongResource {
 	private String buildGetSongById(){
 		return "select * from Songs where songid = ?";
 	}
+	
+	//Aqui va el POST
+	
+	private UUID writeSong(InputStream file) {
+		AudioInputStream inputStream = null;
+		try {
+			inputStream = AudioSystem.getAudioInputStream(file);
+
+		} catch (IOException e) {
+			throw new InternalServerErrorException(
+					"Something has been wrong when reading the file.");
+		}
+		UUID uuid = UUID.randomUUID();
+		String filename = uuid.toString() + ".mp3";
+		try {
+			AudioSystem.write(inputStream, "ogg", new File(app.getProperties().get("uploadFolder") + filename));
+		} catch (IOException e) {
+			throw new InternalServerErrorException(
+					"Something has been wrong when converting the file.");
+		}
+
+		return uuid;
+	}
+	
+	
+	
 }
