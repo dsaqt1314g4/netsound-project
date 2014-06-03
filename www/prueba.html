@@ -8,6 +8,7 @@
 <link rel="stylesheet"
 	href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
  <link rel="stylesheet" href="./css/prueba.css">
+ <link rel ="stylesheet" href ="./css/sidebar.css">
 </head>
 <body>
 	<nav id="navbarid"
@@ -28,26 +29,29 @@
     <div class="navbar-collapse collapse sidebar-navbar-collapse">
       <ul class="nav navbar-nav" id="sidenav01">
         <li>
+           <a id ="stings" href="#" data-toggle="collapse" data-parent="#sidenav01" class="collapsed">
+          <span class="glyphicon glyphicon-send"></span> Stings 
+          </a>
           <a href="#" data-toggle="collapse" data-target="#toggleDemo" data-parent="#sidenav01" class="collapsed">
           <span class="glyphicon glyphicon-music"></span> Songs <span class="caret pull-right"></span>
           </a>
           <div class="collapse" id="toggleDemo" style="height: 0px;">
             <ul class="nav nav-list">
-              <li><a id ="rock" href="#">Rock</a></li>
-              <li><a id = "pop" href="#">Pop</a></li>
-              <li><a id = "jazz" href="#">Jazz</a></li>
+              <li><a id ="songrock" href="#">Rock</a></li>
+              <li><a id = "songpop" href="#">Pop</a></li>
+              <li><a id = "songjazz" href="#">Jazz</a></li>
             </ul>
           </div>
         </li>
         <li>
           <a href="#" data-toggle="collapse" data-target="#toggleDemo2" data-parent="#sidenav01" class="collapsed">
-          <span class="glyphicon glyphicon-inbox"></span> Submenu 2 <span class="caret pull-right"></span>
+          <span class="glyphicon glyphicon-headphones"></span> Playlist <span class="caret pull-right"></span>
           </a>
           <div class="collapse" id="toggleDemo2" style="height: 0px;">
             <ul class="nav nav-list">
-              <li><a href="#">Submenu2.1</a></li>
-              <li><a href="#">Submenu2.2</a></li>
-              <li><a href="#">Submenu2.3</a></li>
+              <li><a id ="playlistrock" href="#">Rock</a></li>
+              <li><a id = "playlistpop" href="#">Pop</a></li>
+              <li><a id = "playlistjazz" href="#">Jazz</a></li>
             </ul>
           </div>
         </li>
@@ -58,13 +62,7 @@
 		</div>
 <div class="col-sm-6">
 </div>
-			<div class="col-sm-6">
-				<h4><strong>Stings</strong></h4>
-				<ul id = "timeline" class="timeline">
-					
-					
-			</ul>	
-		
+			<div id = "variable" class="col-sm-6">
 		
 		</div>
 </div>
