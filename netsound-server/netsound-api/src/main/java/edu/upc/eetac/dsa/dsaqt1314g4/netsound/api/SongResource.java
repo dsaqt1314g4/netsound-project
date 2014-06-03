@@ -1,21 +1,30 @@
 package edu.upc.eetac.dsa.dsaqt1314g4.netsound.api;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.UUID;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sql.DataSource;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -27,12 +36,10 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.glassfish.jersey.media.multipart.FormDataParam;
+
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Song;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.SongCollection;
-
-
-
-
 
 @Path("/songs")
 public class SongResource {
@@ -40,7 +47,7 @@ public class SongResource {
 	private Application app;
 	private SecurityContext security;
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
-	
+
 	@GET
 	@Produces(MediaType.NETSOUND_API_SONG_COLLECTION)
 	public SongCollection getSongs(@QueryParam("length") int length,
@@ -61,10 +68,9 @@ public class SongResource {
 			boolean updateSearch = search != null;
 			stmt = conn.prepareStatement(buildGetSongsQuery(updateFromLast,
 					updateSearch));
-			if (updateSearch){ 
+			if (updateSearch) {
 				stmt.setString(1, "%" + search + "%");
-			}
-			else if (updateFromLast) {
+			} else if (updateFromLast) {
 				stmt.setTimestamp(1, new Timestamp(after));
 			} else {
 				if (before > 0)
@@ -84,7 +90,6 @@ public class SongResource {
 				song.setDescription(rs.getString("description"));
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
-				song.setSongbin(rs.getString("songbin"));
 				song.setScore(rs.getString("score"));
 				songs.addSong(song);
 			}
@@ -101,7 +106,7 @@ public class SongResource {
 
 		return songs;
 	}
-	
+
 	private String buildGetSongsQuery(boolean updateFromLast,
 			boolean updateSearch) {
 		if (updateSearch)
@@ -112,7 +117,7 @@ public class SongResource {
 			return "select * from Songs where last_modified < ifnull(?, now())  order by last_modified desc limit ?";
 
 	}
-	
+
 	@GET
 	@Path("/{songid}")
 	@Produces(MediaType.NETSOUND_API_SONG)
@@ -147,7 +152,6 @@ public class SongResource {
 				song.setDescription(rs.getString("description"));
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
-				song.setSongbin(rs.getString("songbin"));
 				song.setScore(rs.getString("score"));
 			} else {
 				throw new NotFoundException("There's no Song with songid="
@@ -168,26 +172,98 @@ public class SongResource {
 
 		return song;
 	}
-	
-	private String buildGetSongById(){
+
+	private String buildGetSongById() {
 		return "select * from Songs where songid = ?";
 	}
-	
-	//Aqui va el POST
-	
-	private UUID writeSong(InputStream file) {
-		AudioInputStream inputStream = null;
-		try {
-			inputStream = AudioSystem.getAudioInputStream(file);
 
-		} catch (IOException e) {
-			throw new InternalServerErrorException(
-					"Something has been wrong when reading the file.");
+	//@Consumes(MediaType.NETSOUND_API_SONG)
+	@POST
+	@Produces(MediaType.NETSOUND_API_SONG)
+	public Song uploadSong(@FormDataParam("song") InputStream file){// Song song) {
+		Song song = new Song();
+		song.setAlbum("LOLO");
+		song.setSong_name("LOLO");
+		song.setDescription("kñljkljl jkljl");
+		song.setStyle("LOLO");
+		UUID uuid = writeSong(file);
+		int userid = 0;
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
 		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetUserByUsername());
+			stmt.setString(1, "alejandro.jimenez");//security.getUserPrincipal().getName());
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				userid = rs.getInt("userid");
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		}
+
+		stmt = null;
+		try {
+			stmt = conn
+					.prepareStatement("insert into Songs (songid,userid, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, uuid.toString());
+			stmt.setInt(2, userid);
+			stmt.setString(3, song.getSong_name());
+			stmt.setString(4, song.getAlbum());
+			stmt.setString(5, song.getDescription());
+			stmt.setString(6, song.getStyle());
+			stmt.setInt(7, 0);
+			stmt.setInt(8, 0);
+			stmt.executeUpdate();
+			ResultSet rs = stmt.getGeneratedKeys();
+			if (rs.next()) {
+				String songid = rs.getString(0);
+
+				song = getSongFromDatabase(songid);
+				song.setSongURL(app.getProperties().get("") + song.getSongid());
+			} else {
+				// Something has failed...
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+		return song;
+	}
+
+	private UUID writeSong(InputStream file) {
 		UUID uuid = UUID.randomUUID();
 		String filename = uuid.toString() + ".mp3";
+		DataInputStream dis = new DataInputStream(file);
 		try {
-			AudioSystem.write(inputStream, "ogg", new File(app.getProperties().get("uploadFolder") + filename));
+			DataOutputStream dos = new DataOutputStream(new FileOutputStream(
+					app.getProperties().get("uploadFolder") + filename));
+
+			byte[] buffer = new byte[1024];
+			int readed = 0;
+			while ((readed = dis.read(buffer)) != -1) {
+				dos.write(buffer, 0, readed);
+			}
+
+			dis.close();
+			dos.close();
+		} catch (FileNotFoundException e1) {
+			throw new InternalServerErrorException(
+					"Something has been wrong when converting the file.");
 		} catch (IOException e) {
 			throw new InternalServerErrorException(
 					"Something has been wrong when converting the file.");
@@ -195,7 +271,10 @@ public class SongResource {
 
 		return uuid;
 	}
-	
-	
-	
+
+	private String buildGetUserByUsername() {
+
+		return "select * from Users where username = ?";
+	}
+
 }
