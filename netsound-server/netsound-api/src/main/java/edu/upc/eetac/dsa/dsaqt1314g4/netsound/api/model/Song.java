@@ -13,7 +13,7 @@ public class Song {
 	private String description;
 	private String style;
 	private long date;
-	private String songbin;
+	private String songURL;
 	private String score;
 	public List<Link> getLinks() {
 		return links;
@@ -63,17 +63,17 @@ public class Song {
 	public void setDate(long date) {
 		this.date = date;
 	}
-	public String getSongbin() {
-		return songbin;
-	}
-	public void setSongbin(String songbin) {
-		this.songbin = songbin;
-	}
 	public String getScore() {
 		return score;
 	}
 	public void setScore(String score) {
 		this.score = score;
+	}
+	public String getSongURL() {
+		return songURL;
+	}
+	public void setSongURL(String songURL) {
+		this.songURL = songURL;
 	}
 	
 	
