@@ -77,5 +77,8 @@ playlistid int
 
 create table Follow(
 followingid int,
-followerid int
+followerid int,
+foreign key(followingid) references Users(userid),
+foreign key(followerid) references Users(userid),
+primary key (followingid, followerid)
 );

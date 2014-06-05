@@ -34,7 +34,7 @@ public class StingResource {
 
 	private String buildGetUserIdStings() {
 
-		return "select s.* from Stings s, StingsRelation r where s.stingid = r.stingid and r.userid = ?";
+		return "select s.*, u.* from Stings s, StingsRelation r, Users u where s.stingid = r.stingid and u.userid = r.userid and r.userid = ? order by last_modified desc";
 	}
 
 	@Path("/profile/{profileid}/following")
@@ -51,7 +51,7 @@ public class StingResource {
 
 	private String buildGetFollowingStings() {
 
-		return "select s.* from Stings s, StingsRelation r, Follow f where s.stingid=r.stingid and r.userid=f.followingid and f.followerid = ?;";
+		return "select s.*, u.* from Stings s, StingsRelation r, Follow f, Users u where s.stingid=r.stingid and u.userid=f.followingid and r.userid=f.followingid and f.followerid = ? order by last_modified desc";
 	}
 
 	private StingCollection getStingsFromDatabaseByQuery(String Query,
@@ -75,7 +75,9 @@ public class StingResource {
 			while (rs.next()) {
 				Sting sting = new Sting();
 				sting.setStingid(String.valueOf(rs.getInt("stingid")));
+				sting.setUserid(String.valueOf(rs.getInt("userid")));
 				sting.setContent(rs.getString("content"));
+				sting.setUsername(rs.getString("username"));
 				sting.setLastModified(rs.getTimestamp("last_modified")
 						.getTime());
 				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
@@ -122,7 +124,9 @@ public class StingResource {
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
 				sting.setStingid(String.valueOf(rs.getInt("stingid")));
+				sting.setUserid(String.valueOf(rs.getInt("userid")));
 				sting.setContent(rs.getString("content"));
+				sting.setUsername(rs.getString("username"));
 				sting.setLastModified(rs.getTimestamp("last_modified")
 						.getTime());
 
@@ -144,6 +148,6 @@ public class StingResource {
 
 	private String buildGetStingById() {
 
-		return "select * from Stings where stingid = ?";
+		return "select s.*, u.* from Stings s, StingsRelation r, users u  where u.userid=r.userid and r.stingid= s.stingid and s.stingid = ?";
 	}
 }

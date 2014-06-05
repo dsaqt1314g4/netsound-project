@@ -11,6 +11,7 @@ public class User {
 	private String name;
 	private String description;
 	private String userpass;
+	private String email;
 	public List<Link> getLinks() {
 		return links;
 	}
@@ -46,5 +47,11 @@ public class User {
 	}
 	public void setUserpass(String userpass) {
 		this.userpass = userpass;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
 	}
 }
