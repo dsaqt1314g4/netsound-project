@@ -19,6 +19,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -32,8 +33,8 @@ import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.UserCollection;
 
 @Path("/playlist")
 public class PlaylistResource {
-	
-
+	@Context
+	private SecurityContext security;
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
 	@Path("/{playlistid}")
@@ -84,7 +85,6 @@ public class PlaylistResource {
 		return "select * from Playlist where userid = ?";
 	}
 
-	@Path("/{playlist}/playlistid")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST_COLLECTION)
 	public UserCollection getFollowing(@PathParam("profileid") String profileid) {

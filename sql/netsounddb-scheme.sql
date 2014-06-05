@@ -20,7 +20,7 @@ create table User_roles (
 );
 
 create table Songs (
-	songid int not null,
+	songid varchar(36) not null,
 	userid int not null,
 	song_name	varchar(100) not null,
 	album_name varchar(100) not null,
@@ -29,7 +29,6 @@ create table Songs (
 	last_modified	timestamp,
 	score	double not null,
 	num_votes int not null,
-	songbin varchar(36) not null,
 	foreign key(userid) references Users(userid),
 	primary key (songid, song_name),
 	index(songid)
@@ -58,7 +57,7 @@ last_modified	timestamp
 
 create table Stings_Song (
 stingid int not null,
-songid int not null,
+songid varchar(36) not null,
 foreign key(stingid) references Stings(stingid),
 foreign key(songid) references Songs(songid)
 );

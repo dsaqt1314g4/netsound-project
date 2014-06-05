@@ -15,7 +15,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Sting;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.StingCollection;
@@ -24,7 +26,9 @@ import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.UserCollection;
 
 @Path("/profile")
 public class UserResource {
-
+	@Context
+	private SecurityContext security;
+	
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
 	@Path("/{profileid}")
