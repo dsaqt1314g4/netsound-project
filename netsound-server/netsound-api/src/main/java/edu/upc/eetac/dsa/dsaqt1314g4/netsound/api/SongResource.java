@@ -1,5 +1,7 @@
 package edu.upc.eetac.dsa.dsaqt1314g4.netsound.api;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -171,10 +173,12 @@ public class SongResource {
 		return "select * from Songs where songid = ?";
 	}
 
-	//@Consumes(MediaType.NETSOUND_API_SONG)
+	// @Consumes(MediaType.NETSOUND_API_SONG)
 	@POST
 	@Produces(MediaType.NETSOUND_API_SONG)
-	public Song uploadSong(@FormDataParam("song") InputStream file){// Song song) {
+	public Song uploadSong(@FormDataParam("song") InputStream file) {// Song
+																		// song)
+																		// {
 		Song song = new Song();
 		song.setAlbum("LOLO");
 		song.setSong_name("LOLO");
@@ -193,7 +197,7 @@ public class SongResource {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(buildGetUserByUsername());
-			stmt.setString(1, "alejandro.jimenez");//security.getUserPrincipal().getName());
+			stmt.setString(1, "alejandro.jimenez");// security.getUserPrincipal().getName());
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				userid = rs.getInt("userid");
@@ -206,7 +210,9 @@ public class SongResource {
 		stmt = null;
 		try {
 			stmt = conn
-					.prepareStatement("insert into Songs (songid,userid, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+					.prepareStatement(
+							"insert into Songs (songid,userid, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)",
+							Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, uuid.toString());
 			stmt.setInt(2, userid);
 			stmt.setString(3, song.getSong_name());
