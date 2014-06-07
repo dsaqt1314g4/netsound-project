@@ -1,6 +1,6 @@
 var API_URL = "http://localhost:8080/netsound-api";
 
-
+loadRootAPI(function(rootAPI){
 $("#signin").click(function(e){
 	e.preventDefault();
 	$("#result").text(' ');
@@ -8,19 +8,32 @@ $("#signin").click(function(e){
 		$('<div class="alert alert-danger"> <strong>Oh!</strong> You must complete all the fields </div>').appendTo($("#result"));
 	}
 	else{
-	var Signin = new Object();
-	Signin.name = $("#name").val();
-	Signin.username = $("#username").val();
-	Signin.userpass = $("#password").val();
-	Signin.email = $("#email").val();
-	Signin.description = $("#description").val();
-	signin(Signin);
+	var user = new Object();
+	user.name = $("#name").val();
+	user.username = $("#username").val();
+	user.userpass = $("#password").val();
+	user.email = $("#email").val();
+	user.description = $("#description").val();
+	var createUserLink = rootAPI.getLink('create-user');
+	createUSer(createUserLink.href, createUserLink.type, JSON.stringify(user), function(user){
+		$('<div class="alert alert-success"> <strong>Well done!</strong></div>').appendTo($("#result"));
+		$('<button id="login" class="btn btn-lg btn-primary btn-block login-btn" type="submit">Login</button>').appendTo($("#result"));
+		$("#login").click(function(e){
+			window.location.replace("/login.html");
+			});
+		
+  	}).fail(function() {
+		$('<div class="alert alert-danger"> <strong>Oh!</strong> You already have an account </div>').appendTo($("#result"));
+	});
+	
+	});
 	}
 	});
+});
 
 
 
-
+/*
 function signin(Signin){
 	var url = API_URL + '/profile';
 	var data = JSON.stringify(Signin);
@@ -48,4 +61,4 @@ function signin(Signin){
 	  	}).fail(function() {
 			$('<div class="alert alert-danger"> <strong>Oh!</strong> You already have an account </div>').appendTo($("#result"));
 		});
-	}
+	}*/

@@ -36,11 +36,11 @@ public class PlaylistResource {
 
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
-	@Path("/{playlistid}")
+	@Path("/profile/{profileid}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST)
-	public Playlist getPlaylist(@PathParam("playlistid") String profileid) {
-		Playlist playlist = new Playlist();
+	public PlaylistCollection getUserPlaylists(@PathParam("profileid") String profileid) {
+		PlaylistCollection playlists = new PlaylistCollection();
 
 		Connection conn = null;
 		try {
@@ -56,12 +56,14 @@ public class PlaylistResource {
 			stmt.setInt(1, Integer.valueOf(profileid));
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
+				Playlist playlist = new Playlist();
 				playlist.setPlaylistid(String.valueOf(rs.getInt("playlistid")));
 				playlist.setUserid(String.valueOf(rs.getInt("userid")));
 				playlist.setPlaylist_name(rs.getString("playlistname"));
 				playlist.setDescription(rs.getString("description"));
 				playlist.setStyle(rs.getString("description"));
 				playlist.setScore(rs.getString("score"));
+				playlists.addPlaylist(playlist);
 
 			}
 		} catch (SQLException e) {
@@ -76,7 +78,7 @@ public class PlaylistResource {
 			}
 		}
 
-		return playlist;
+		return playlists;
 	}
 
 	private String buildGetUserById() {
@@ -84,10 +86,10 @@ public class PlaylistResource {
 		return "select * from Playlist where userid = ?";
 	}
 
-	@Path("/{playlist}/playlistid")
+	@Path("/{playlistid}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST_COLLECTION)
-	public UserCollection getFollowing(@PathParam("profileid") String profileid) {
+	public UserCollection getFollowing(@PathParam("playlistid") String profileid) {
 		UserCollection following = new UserCollection();
 		Connection conn = null;
 		try {

@@ -4,7 +4,19 @@ import java.util.List;
 
 import javax.ws.rs.core.Link;
 
+import org.glassfish.jersey.linking.Binding;
+import org.glassfish.jersey.linking.InjectLink;
+import org.glassfish.jersey.linking.InjectLinks;
+import org.glassfish.jersey.linking.InjectLink.Style;
+
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.MediaType;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.UserResource;
+
+
 public class User {
+	@InjectLinks({
+		@InjectLink(resource = UserResource.class, style = Style.ABSOLUTE, rel = "user", title = "Userpage", type = MediaType.NETSOUND_API_USER, method = "getUser", bindings = @Binding(name = "profileid", value = "${instance.userid}")) })
+	
 	private List<Link> links;
 	private String username;
 	private String userid;
