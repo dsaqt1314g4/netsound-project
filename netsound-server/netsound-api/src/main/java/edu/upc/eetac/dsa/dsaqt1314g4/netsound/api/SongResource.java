@@ -98,6 +98,7 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
+				song.setSongURL(app.getProperties().get("imgBaseURL") + song.getSongid());
 				songs.addSong(song);
 			}
 		} catch (SQLException e) {
@@ -164,6 +165,7 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
+				song.setSongURL(app.getProperties().get("imgBaseURL") + song.getSongid());
 				songs.addSong(song);
 			}
 		} catch (SQLException e) {
@@ -223,6 +225,7 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
+				song.setSongURL(app.getProperties().get("imgBaseURL") + song.getSongid());
 			} else {
 				throw new NotFoundException("There's no Song with songid="
 						+ songid);
