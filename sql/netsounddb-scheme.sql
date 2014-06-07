@@ -41,6 +41,7 @@ create table Playlists (
 	style	varchar(50) not  null,
 	last_modified	timestamp,
 	score	double not null,
+	num_votes int not null,
 	foreign key(username) references users(username),
 	primary key (playlistid, playlist_name),
 	index(playlistid)
