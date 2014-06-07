@@ -85,6 +85,8 @@ public class PlaylistResource {
 		return "select * from Playlist where playlistid= ?";
 	}
 
+
+	@Path("/{playlistid}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST_COLLECTION)
 	public UserCollection getFollowing(@PathParam("profileid") String profileid) {

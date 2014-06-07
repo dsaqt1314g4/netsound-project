@@ -16,15 +16,13 @@
 			<param-name>javax.ws.rs.Application</param-name>
 			<param-value>edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.NetsoundApplication</param-value>
 		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>Netsound API</servlet-name>
-		<url-pattern>/*</url-pattern>
-	</servlet-mapping>
-	
-	<filter>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Netsound API</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    	<filter>
 		<!-- The CORS filter with parameters -->
 		<filter-name>CORS</filter-name>
 		<filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>

@@ -15,20 +15,14 @@ $("#singup").click(function(e) {
 	});
 
 function Login(Username){
-	var url = API_URL + '/profile/username/'+ Username;
+	var url = API_URL + 'profile/username/'+ Username;
 
-		$.ajax({
-			url : url,
-			type : 'GET',
-			crossDomain : true,
-			dataType : 'json',
-		}).done(function(data, status, jqxhr) {
-
-					var repo = data;
-						document.cookie="userid="+repo.userid;
-						window.location.replace("/prueba.html");
-					
-
-				}).fail(function() {
-					});
-	}
+		getUser(url, function(user){
+			var userjs = new User(user);
+				//console.log(userjs.getLink('user').href);
+document.cookie ="userid="+userjs.userid;
+document.cookie="userlink="+userjs.getLink('user').href;
+			console.log(document.cookie);
+			window.location.replace("/prueba.html");
+	});
+}
