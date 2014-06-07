@@ -31,54 +31,11 @@ public class UserResource {
 	
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
-	@Path("/{profileid}")
+	
+	@Path("/{username}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_USER)
-	public User getUser(@PathParam("profileid") String profileid) {
-		User user = new User();
-
-		Connection conn = null;
-		try {
-			conn = ds.getConnection();
-		} catch (SQLException e) {
-			throw new ServerErrorException("Could not connect to the database",
-					Response.Status.SERVICE_UNAVAILABLE);
-		}
-
-		PreparedStatement stmt = null;
-		try {
-			stmt = conn.prepareStatement(buildGetUserById());
-			stmt.setInt(1, Integer.valueOf(profileid));
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next()) {
-				user.setUserid(String.valueOf(rs.getInt("userid")));
-				user.setUsername(rs.getString("username"));
-				user.setName(rs.getString("name"));
-				user.setDescription(rs.getString("description"));
-			}
-		} catch (SQLException e) {
-			throw new ServerErrorException(e.getMessage(),
-					Response.Status.INTERNAL_SERVER_ERROR);
-		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-				conn.close();
-			} catch (SQLException e) {
-			}
-		}
-
-		return user;
-	}
-
-	private String buildGetUserById() {
-
-		return "select * from Users where userid = ?";
-	}
-	@Path("/username/{username}")
-	@GET
-	@Produces(MediaType.NETSOUND_API_USER)
-	public User getUserbyUsername(@PathParam("username") String username) {
+	public User getUser(@PathParam("username") String username) {
 		User user = new User();
 
 		Connection conn = null;
@@ -95,7 +52,6 @@ public class UserResource {
 			stmt.setString(1, username);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
-				user.setUserid(String.valueOf(rs.getInt("userid")));
 				user.setUsername(rs.getString("username"));
 				user.setName(rs.getString("name"));
 				user.setDescription(rs.getString("description"));
@@ -117,13 +73,13 @@ public class UserResource {
 
 	private String buildGetUserByUsername() {
 
-		return "select * from Users where username = ?";
+		return "select * from users where username = ?";
 	}
 
-	@Path("/{profileid}/following")
+	@Path("/{username}/following")
 	@GET
 	@Produces(MediaType.NETSOUND_API_USER_COLLECTION)
-	public UserCollection getFollowing(@PathParam("profileid") String profileid) {
+	public UserCollection getFollowing(@PathParam("username") String username) {
 		UserCollection following = new UserCollection();
 		Connection conn = null;
 		try {
@@ -136,11 +92,10 @@ public class UserResource {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(buildGetFollowingById());
-			stmt.setInt(1, Integer.valueOf(profileid));
+			stmt.setString(1, username);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
 				User user = new User();
-				user.setUserid(String.valueOf(rs.getInt("userid")));
 				user.setUsername(rs.getString("username"));
 				user.setName(rs.getString("name"));
 				user.setDescription(rs.getString("description"));
@@ -162,45 +117,45 @@ public class UserResource {
 	}
 
 	private String buildGetFollowingById() {
-		return "select u.* from Users u, follow f where f.followingid = u.userid and f.followerid = ?";
+		return "select u.* from users u, follow f where f.followingname = u.username and f.followername = ?";
 	}
 
 	
-	@Path("/{profileid}/stings")
+	@Path("/{username}/stings")
 	@GET
 	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
 	public StingCollection getUserStings(
-			@PathParam("profileid") String profileid) {
+			@PathParam("username") String username) {
 		StingCollection stings = new StingCollection();
-		stings = getStingsFromDatabaseByQuery(buildGetUserIdStings(), profileid);
+		stings = getStingsFromDatabaseByQuery(buildGetUserIdStings(), username);
 		return stings;
 
 	}
 
 	private String buildGetUserIdStings() {
 
-		return "select s.*, u.username from Stings s,  Users u where  u.userid = s.userid and s.userid = ? order by last_modified desc";
+		return "select s.*, u.username from Stings s,  users u where  u.username = s.username and s.username = ? order by last_modified desc";
 	}
 
-	@Path("/{profileid}/following/stings")
+	@Path("/{username}/following/stings")
 	@GET
 	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
 	public StingCollection getUserFollowingStings(
-			@PathParam("profileid") String profileid) {
+			@PathParam("username") String username) {
 		StingCollection stings = new StingCollection();
 		stings = getStingsFromDatabaseByQuery(buildGetFollowingStings(),
-				profileid);
+				username);
 		return stings;
 
 	}
 
 	private String buildGetFollowingStings() {
 
-		return "select s.*, u.username from Stings s, Follow f, Users u where u.userid=f.followingid and s.userid=f.followingid and f.followerid = ? order by last_modified desc";
+		return "select s.*, u.username from Stings s, Follow f, users u where u.username=f.followingname and s.username=f.followingname and f.followername = ? order by last_modified desc";
 	}
 
 	private StingCollection getStingsFromDatabaseByQuery(String Query,
-			String profileid) {
+			String username) {
 		StingCollection stings = new StingCollection();
 		Connection conn = null;
 		try {
@@ -213,16 +168,14 @@ public class UserResource {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(Query);
-			stmt.setInt(1, Integer.valueOf(profileid));
+			stmt.setString(1, username);
 			ResultSet rs = stmt.executeQuery();
 			boolean first = true;
 			long oldestTimestamp = 0;
 			while (rs.next()) {
 				Sting sting = new Sting();
-				sting.setStingid(String.valueOf(rs.getInt("stingid")));
-				sting.setUserid(String.valueOf(rs.getInt("userid")));
-				sting.setContent(rs.getString("content"));
 				sting.setUsername(rs.getString("username"));
+				sting.setContent(rs.getString("content"));
 				sting.setLastModified(rs.getTimestamp("last_modified")
 						.getTime());
 				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
@@ -254,7 +207,7 @@ public class UserResource {
 	@Produces(MediaType.NETSOUND_API_USER)
 	public User createUser(User user) {
 		validateUser(user);
-		if(user.getUsername().equals(getUserbyUsername(user.getUsername()).getUsername())){
+		if(user.getUsername().equals(getUser(user.getUsername()).getUsername())){
 			throw new BadRequestException("There is already a user with this Username");
 		}
 		Connection conn = null;
@@ -281,10 +234,10 @@ public class UserResource {
 			stmt.executeUpdate();
 			ResultSet rs = stmt.getGeneratedKeys();
 			if (rs.next()) {
-				String userid = String.valueOf(rs.getInt(1));
-				user = getUser(userid);
+				String username = rs.getString(1);
+				user = getUser(username);
 				stmt2 = conn.prepareStatement(buildCreateUserRole());
-				stmt2.setInt(1, Integer.valueOf(user.getUserid()));
+				stmt2.setString(1, user.getUsername());
 				stmt2.executeUpdate();
 			} else {
 
@@ -309,7 +262,7 @@ public class UserResource {
 
 	private String buildCreateUserRole() {
 		
-		return "insert into User_roles values(?, 'registered')";
+		return "insert into user_roles values(?, 'registered')";
 	}
 
 	private void validateUser(User user) {
@@ -326,7 +279,7 @@ public class UserResource {
 
 	private String buildCreateUser() {
 
-		return "insert into Users (username, userpass, name, description, email) values (?, MD5(?), ?, ?, ?);";
+		return "insert into users (username, userpass, name, description, email) values (?, MD5(?), ?, ?, ?);";
 	}
 
 }

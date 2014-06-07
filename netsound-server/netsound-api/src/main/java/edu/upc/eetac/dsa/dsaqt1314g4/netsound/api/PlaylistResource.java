@@ -40,7 +40,7 @@ public class PlaylistResource {
 	@Path("/{playlistid}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST)
-	public Playlist getPlaylist(@PathParam("playlistid") String profileid) {
+	public Playlist getPlaylist(@PathParam("playlistid") String playlistid) {
 		Playlist playlist = new Playlist();
 
 		Connection conn = null;
@@ -53,12 +53,12 @@ public class PlaylistResource {
 
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(buildGetUserById());
-			stmt.setInt(1, Integer.valueOf(profileid));
+			stmt = conn.prepareStatement(buildGetPlaylistById());
+			stmt.setInt(1, Integer.valueOf(playlistid));
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
 				playlist.setPlaylistid(String.valueOf(rs.getInt("playlistid")));
-				playlist.setUserid(String.valueOf(rs.getInt("userid")));
+				playlist.setUsername(rs.getString("username"));
 				playlist.setPlaylist_name(rs.getString("playlistname"));
 				playlist.setDescription(rs.getString("description"));
 				playlist.setStyle(rs.getString("description"));
@@ -80,9 +80,9 @@ public class PlaylistResource {
 		return playlist;
 	}
 
-	private String buildGetUserById() {
+	private String buildGetPlaylistById() {
 
-		return "select * from Playlist where userid = ?";
+		return "select * from Playlist where playlistid= ?";
 	}
 
 	@GET
@@ -105,7 +105,7 @@ public class PlaylistResource {
 			while (rs.next()) {
 				Playlist playlist = new Playlist();
 				playlist.setPlaylistid(String.valueOf(rs.getInt("playlistid")));
-				playlist.setUserid(String.valueOf(rs.getInt("userid")));
+				playlist.setUsername(rs.getString("username"));
 				playlist.setPlaylist_name(rs.getString("playlistname"));
 				playlist.setDescription(rs.getString("description"));
 				playlist.setStyle(rs.getString("description"));
@@ -130,70 +130,6 @@ public class PlaylistResource {
 		return "select p.* from Playlist u where p.playlistid = ?";
 	}
 
-
-	@POST
-	@Consumes(MediaType.NETSOUND_API_PLAYLIST)
-	@Produces(MediaType.NETSOUND_API_PLAYLIST)
-/*	public Playlist createPlaylist(Playlist playlist) {
-		Connection conn = null;
-		try {
-			conn = ds.getConnection();
-		} catch (SQLException e) {
-			throw new ServerErrorException("Could not connect to the database",
-					Response.Status.SERVICE_UNAVAILABLE);
-		}
-
-//		PreparedStatement stmt = null;
-//		PreparedStatement stmt2 = null;
-//		try {
-//			if(playlist.getUserpass() == null){
-//				throw new BadRequestException("Password Can't be null");
-//			}
-//			stmt = conn.prepareStatement(buildCreateUser(),
-//					Statement.RETURN_GENERATED_KEYS);
-//			stmt.setString(1, playlist.getUsername());
-//			stmt.setString(2, playlist.getName());
-//			if (playlist.getDescription() == null) {
-//				playlist.setDescription("I'm always tired, because I'm a superhero at night");
-//			}
-//			stmt.setString(3, playlist.getDescription());
-//			stmt.executeUpdate();
-//
-//
-//			
-//			ResultSet rs = stmt.getGeneratedKeys();
-//			if (rs.next()) {
-//				String userid = String.valueOf(rs.getInt(1));
-//				playlist = getUser(userid);
-//			} else {
-//
-//			}
-//
-//		} catch (SQLException e) {
-//			throw new ServerErrorException(e.getMessage(),
-//					Response.Status.INTERNAL_SERVER_ERROR);
-//		} finally {
-//			try {
-//				if (stmt != null)
-//					stmt.close();
-//				conn.close();
-//			} catch (SQLException e) {
-//			}
-//		}
-//
-//		return playlist;
-
-	}
-
-	/*private String buildCreateRealmUser() {
-		
-		return "insert into realmdb.users (username, userpass) values (?, MD5(?))" ;
-	}*/
-
-	private String buildCreateUser() {
-
-		return "insert into Users (username, name, description) values (?, ?, ?);";
-	}
 
 }
 

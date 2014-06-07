@@ -4,8 +4,9 @@
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	
 	<servlet>
-		<servlet-name>Netsound Application</servlet-name>
+		<servlet-name>Netsound API</servlet-name>
 		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
@@ -17,10 +18,12 @@
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+	
 	<servlet-mapping>
-		<servlet-name>Netsound Application</servlet-name>
+		<servlet-name>Netsound API</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
+	
 	<filter>
 		<!-- The CORS filter with parameters -->
 		<filter-name>CORS</filter-name>
@@ -76,6 +79,11 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<!-- <realm-name>westerios</realm-name> -->
+	</login-config>
+	
 	<security-role>
 		<role-name>administrator</role-name>
 	</security-role>
@@ -101,7 +109,6 @@
 		</web-resource-collection>
 		<auth-constraint>
 			<role-name>registered</role-name>
-			<role-name>administrator</role-name>
 		</auth-constraint>
 	</security-constraint>
 	
@@ -115,13 +122,12 @@
 		</web-resource-collection>
 		<auth-constraint>
 			<role-name>registered</role-name>
-			<role-name>administrator</role-name>
 		</auth-constraint>
 	</security-constraint>
 	
 	<security-constraint>
 		<web-resource-collection>
-			<web-resource-name>Profile</web-resource-name>
+			<web-resource-name>User</web-resource-name>
 			<url-pattern>/profile/*</url-pattern>
 			<http-method>GET</http-method>
 			<http-method>POST</http-method>
@@ -129,7 +135,6 @@
 		</web-resource-collection>
 		<auth-constraint>
 			<role-name>registered</role-name>
-			<role-name>administrator</role-name>
 		</auth-constraint>
 	</security-constraint>
 	

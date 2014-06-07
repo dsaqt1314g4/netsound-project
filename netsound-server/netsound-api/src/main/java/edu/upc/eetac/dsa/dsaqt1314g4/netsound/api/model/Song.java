@@ -7,7 +7,7 @@ import javax.ws.rs.core.Link;
 public class Song {
 	private List<Link> links;
 	private String songid;
-	private String userid;
+	private String username;
 	private String song_name;
 	private String album;
 	private String description;
@@ -27,12 +27,7 @@ public class Song {
 	public void setSongid(String songid) {
 		this.songid = songid;
 	}
-	public String getUserid() {
-		return userid;
-	}
-	public void setUserid(String userid) {
-		this.userid = userid;
-	}
+	
 	public String getSong_name() {
 		return song_name;
 	}
@@ -74,6 +69,12 @@ public class Song {
 	}
 	public void setSongURL(String songURL) {
 		this.songURL = songURL;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
 	}
 	
 	

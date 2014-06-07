@@ -80,7 +80,7 @@ public class SongResource {
 			while (rs.next()) {
 				Song song = new Song();
 				song.setSongid(rs.getString("songid"));
-				song.setUserid(rs.getString("userid"));
+				song.setUsername(rs.getString("username"));
 				song.setSong_name(rs.getString("song_name"));
 				song.setAlbum(rs.getString("album_name"));
 				song.setDescription(rs.getString("description"));
@@ -142,7 +142,7 @@ public class SongResource {
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				song.setSongid(rs.getString("songid"));
-				song.setUserid(rs.getString("userid"));
+				song.setUsername(rs.getString("username"));
 				song.setSong_name(rs.getString("song_name"));
 				song.setAlbum(rs.getString("album_name"));
 				song.setDescription(rs.getString("description"));
@@ -185,7 +185,6 @@ public class SongResource {
 		song.setDescription("kñljkljl jkljl");
 		song.setStyle("LOLO");
 		UUID uuid = writeSong(file);
-		int userid = 0;
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -196,25 +195,12 @@ public class SongResource {
 
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(buildGetUserByUsername());
-			stmt.setString(1, "alejandro.jimenez");// security.getUserPrincipal().getName());
-			ResultSet rs = stmt.executeQuery();
-			if (rs.next()) {
-				userid = rs.getInt("userid");
-			}
-		} catch (SQLException e) {
-			throw new ServerErrorException(e.getMessage(),
-					Response.Status.INTERNAL_SERVER_ERROR);
-		}
-
-		stmt = null;
-		try {
 			stmt = conn
 					.prepareStatement(
-							"insert into Songs (songid,userid, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)",
+							"insert into Songs (songid,username, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)",
 							Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, uuid.toString());
-			stmt.setInt(2, userid);
+			stmt.setString(2, security.getUserPrincipal().getName());
 			stmt.setString(3, song.getSong_name());
 			stmt.setString(4, song.getAlbum());
 			stmt.setString(5, song.getDescription());
@@ -272,10 +258,6 @@ public class SongResource {
 		return uuid;
 	}
 
-	private String buildGetUserByUsername() {
-
-		return "select * from Users where username = ?";
-	}
 
 	
 	

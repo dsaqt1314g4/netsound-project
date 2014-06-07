@@ -8,7 +8,7 @@ public class Playlist {
 	
 	private List<Link> links;
 	private String playlistid;
-	private String userid;
+	private String username;
 	private String playlist_name;
 	private String description;
 	private String style;
@@ -27,12 +27,6 @@ public class Playlist {
 	}
 	public void setPlaylistid(String playlistid) {
 		this.playlistid = playlistid;
-	}
-	public String getUserid() {
-		return userid;
-	}
-	public void setUserid(String userid) {
-		this.userid = userid;
 	}
 	public String getPlaylist_name() {
 		return playlist_name;
@@ -63,6 +57,12 @@ public class Playlist {
 	}
 	public void setScore(String score) {
 		this.score = score;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
 	}
 	
 }

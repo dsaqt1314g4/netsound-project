@@ -7,7 +7,6 @@ import javax.ws.rs.core.Link;
 public class User {
 	private List<Link> links;
 	private String username;
-	private String userid;
 	private String name;
 	private String description;
 	private String userpass;
@@ -23,12 +22,6 @@ public class User {
 	}
 	public void setUsername(String username) {
 		this.username = username;
-	}
-	public String getUserid() {
-		return userid;
-	}
-	public void setUserid(String userid) {
-		this.userid = userid;
 	}
 	public String getName() {
 		return name;
