@@ -15,6 +15,7 @@ public class Song {
 	private long date;
 	private String songURL;
 	private String score;
+	private String num_votes;
 	public List<Link> getLinks() {
 		return links;
 	}
@@ -75,6 +76,12 @@ public class Song {
 	}
 	public void setUsername(String username) {
 		this.username = username;
+	}
+	public String getNum_votes() {
+		return num_votes;
+	}
+	public void setNum_votes(String num_votes) {
+		this.num_votes = num_votes;
 	}
 	
 	

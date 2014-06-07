@@ -29,7 +29,7 @@ create table Songs (
 	score	double not null,
 	num_votes int not null,
 	foreign key(username) references users(username),
-	primary key (songid, song_name),
+	primary key (username, song_name),
 	index(songid)
 );
 
