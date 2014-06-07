@@ -250,12 +250,9 @@ public class SongResource {
 		return "select * from Songs where songid = ?";
 	}
 
-	// @Consumes(MediaType.NETSOUND_API_SONG)
 	@POST
 	@Produces(MediaType.NETSOUND_API_SONG)
-	public Song uploadSong(@FormDataParam("song") InputStream file) {// Song
-																		// song)
-																		// {
+	public Song uploadSong(@FormDataParam("song") InputStream file) {
 		Song song = new Song();
 		song.setAlbum("LOLO");
 		song.setSong_name("LOLO");
@@ -272,10 +269,7 @@ public class SongResource {
 
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn
-					.prepareStatement(
-							"insert into Songs (songid,username, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)",
-							Statement.RETURN_GENERATED_KEYS);
+			stmt = conn.prepareStatement(buildPostSong(), Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, uuid.toString());
 			stmt.setString(2, "alejandro.jimenez");// System.out.println(security.getUserPrincipal().getName());
 			stmt.setString(3, song.getSong_name());
@@ -306,6 +300,10 @@ public class SongResource {
 			}
 		}
 		return song;
+	}
+	
+	private String buildPostSong() {
+		return "insert into Songs (songid,username, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)";
 	}
 
 	private UUID writeSong(InputStream file) {
