@@ -120,6 +120,50 @@ public class UserResource {
 		return "select u.* from users u, Follow f where f.followingname = u.username and f.followername = ?";
 	}
 
+	@Path("/{username}/follower")
+	@GET
+	@Produces(MediaType.NETSOUND_API_USER_COLLECTION)
+	public UserCollection getFollower(@PathParam("username") String username) {
+		UserCollection follower = new UserCollection();
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetFollowerById());
+			stmt.setString(1, username);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				User user = new User();
+				user.setUsername(rs.getString("username"));
+				user.setName(rs.getString("name"));
+				user.setDescription(rs.getString("description"));
+				follower.addUser(user);
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return follower;
+	}
+
+	private String buildGetFollowerById() {
+		return "select u.* from users u, Follow f where f.followername = u.username and f.followingname = ?";
+	}
+	
 	
 	@Path("/{username}/stings")
 	@GET
