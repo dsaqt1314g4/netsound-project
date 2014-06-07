@@ -10,6 +10,9 @@ target/
 # files for the dex VM
 *.dex
  
+# files off music
+*.mp3
+
 # Java class files
 *.class
  
