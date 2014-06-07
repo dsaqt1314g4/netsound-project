@@ -117,7 +117,7 @@ public class UserResource {
 	}
 
 	private String buildGetFollowingById() {
-		return "select u.* from users u, follow f where f.followingname = u.username and f.followername = ?";
+		return "select u.* from users u, Follow f where f.followingname = u.username and f.followername = ?";
 	}
 
 	
