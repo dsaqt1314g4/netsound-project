@@ -1,6 +1,7 @@
 var API_URL = "http://localhost:8080/netsound-api";
 
-loadRootAPI(function(rootAPI){
+$(document).ready(function(){
+	loadRootAPI(function(rootAPI){
 $("#signin").click(function(e){
 	e.preventDefault();
 	$("#result").text(' ');
@@ -15,20 +16,18 @@ $("#signin").click(function(e){
 	user.email = $("#email").val();
 	user.description = $("#description").val();
 	var createUserLink = rootAPI.getLink('create-user');
-	createUSer(createUserLink.href, createUserLink.type, JSON.stringify(user), function(user){
+	console.log(createUserLink);
+	createUser(createUserLink.href, createUserLink.type, JSON.stringify(user), function(user){
 		$('<div class="alert alert-success"> <strong>Well done!</strong></div>').appendTo($("#result"));
 		$('<button id="login" class="btn btn-lg btn-primary btn-block login-btn" type="submit">Login</button>').appendTo($("#result"));
 		$("#login").click(function(e){
 			window.location.replace("/login.html");
-			});
-		
-  	}).fail(function() {
-		$('<div class="alert alert-danger"> <strong>Oh!</strong> You already have an account </div>').appendTo($("#result"));
-	});
+			});	
+  	});
 	
-	});
 	}
 	});
+});
 });
 
 

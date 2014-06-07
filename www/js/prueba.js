@@ -1,15 +1,20 @@
 $("#navbarid").load("Homepage2.html");
 var API_URL = "http://localhost:8080/netsound-api/";
-var userid = getCookie("userid");
-var title ="";
+var username = getCookie("username");
+var userpass = getCookie("userpass");
+var url = "";
+$.ajaxSetup({
+    headers: { 'Authorization': "Basic "+btoa(username+':'+userpass) }
+});
 
 $(document).ready(function(){
-		loadStings(userid);
+		loadStings(url = getCookie("followingstings"));
 	});
 
 $("#stings").click(function(e){
 	e.preventDefault();
-	loadStings(userid);
+
+	loadStings(url = getCookie("followingstings"));
 	});
 $("#songrock").click(function(e){
 	e.preventDefault();
@@ -49,8 +54,8 @@ $("#link").click(function(e){
 	});
 
 
-function loadStings(userid){ //cambiar userid por el link cuando se hayan hecho los injectlinks
-	var url = API_URL + "profile/"+userid+"/following/stings";
+function loadStings(url){ 
+	console.log(url);
 	var stings = getStings(url, function (stingCollection){
 	
 	console.log(stingCollection);

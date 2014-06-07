@@ -15,7 +15,12 @@ import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.UserResource;
 
 public class User {
 	@InjectLinks({
-		@InjectLink(resource = UserResource.class, style = Style.ABSOLUTE, rel = "user", title = "Userpage", type = MediaType.NETSOUND_API_USER, method = "getUser", bindings = @Binding(name = "profileid", value = "${instance.userid}")) })
+		@InjectLink(resource = UserResource.class, style = Style.ABSOLUTE, rel = "self", title = "Userpage", type = MediaType.NETSOUND_API_USER, method = "getUser", bindings = @Binding(name = "username", value = "${instance.username}")),
+		@InjectLink(resource = UserResource.class, style = Style.ABSOLUTE, rel = "following-stings", title = "Following Stings", type = MediaType.NETSOUND_API_STING_COLLECTION, method = "getUserFollowingStings", bindings = @Binding(name = "username", value = "${instance.username}")),
+		@InjectLink(resource = UserResource.class, style = Style.ABSOLUTE, rel = "following", title = "Following", type = MediaType.NETSOUND_API_USER_COLLECTION, method = "getFollowing", bindings = @Binding(name = "username", value = "${instance.username}")),
+		@InjectLink(resource = UserResource.class, style = Style.ABSOLUTE, rel = "stings", title = "Stings", type = MediaType.NETSOUND_API_STING_COLLECTION, method = "getUserStings", bindings = @Binding(name = "username", value = "${instance.username}")),
+})
+	
 	
 	private List<Link> links;
 	private String username;
