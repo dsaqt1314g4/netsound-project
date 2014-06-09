@@ -32,7 +32,7 @@ document.cookie="mystings="+userjs.getLink('stings').href;
 //document.cookie="playlists="+userjs.getLink('playlists').href;
 document.cookie="username="+userjs.username;
 document.cookie="userpass="+PASSWORD;
-window.location.replace("/prueba.html");
+window.location.replace("/home.html");
 });
 }
 

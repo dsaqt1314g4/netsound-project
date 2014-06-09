@@ -14,3 +14,34 @@
     	console.log(document.cookie);
     	
     });
+    
+    $("#home").click(function(e) {
+    	e.preventDefault();
+    	window.location.replace("/home.html");
+    	
+    });
+    
+    $("#profile").click(function(e) {
+    	e.preventDefault();
+    	var userprofile = getCookie("userlink");
+    	document.cookie="userprofile="+userprofile;
+    	window.location.replace("/profile.html");
+    	
+    });
+    
+
+    function delete_cookie( name ) {
+    	  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    	}
+
+    function getCookie(name){
+    var pattern = RegExp(name + "=.[^;]*");
+    matched = document.cookie.match(pattern);
+    if(matched){
+        var cookie = matched[0].split('=');
+        return cookie[1];
+    }
+    return false;
+    }
+    
+    
