@@ -1,4 +1,4 @@
-$("#navbarid").load("Homepage2.html");
+$("#navbarid").load("Bar.html");
 var API_URL = "http://localhost:8080/netsound-api/";
 var username = getCookie("username");
 var userpass = getCookie("userpass");
@@ -22,9 +22,16 @@ $("#stings").click(function(e){
 
 	loadStings(userjs.getLink('stings').href);
 	});
+$("#songs").click(function(e){
+	e.preventDefault();
+
+	updateSong();
+	});
+
 
 function loadStings(url){ 
 	console.log(url);
+	$('#panel').text("");
 	var stings = getStings(url, function (stingCollection){
 	
 	console.log(stingCollection);
@@ -47,6 +54,14 @@ function loadStings(url){
 		$('#panel').append('</ul>');
 		
 	});
+}
+
+function updateSong(){
+	$('#panel').text("");
+	if(userjs.username == username){
+	$('#panel').load("modal.html");
+	}
+	
 }
 
 function delete_cookie( name ) {

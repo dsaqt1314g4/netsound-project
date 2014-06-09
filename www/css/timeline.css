@@ -4,16 +4,7 @@
   padding: 20px 0 20px;
   position: relative;
 }
-.timeline:before {
-  top: 0;
-  bottom: 0;
-  position: absolute;
-  content: " ";
-  width: 3px;
-  background-color: #eeeeee;
-  right: 25px;
-  margin-left: -1.5px;
-}
+
 .timeline > li {
   margin-bottom: 20px;
   position: relative;

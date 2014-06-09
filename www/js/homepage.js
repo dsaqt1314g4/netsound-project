@@ -1,4 +1,4 @@
-$("#navbarid").load("Homepage2.html");
+$("#navbarid").load("Bar.html");
 var API_URL = "http://localhost:8080/netsound-api/";
 var username = getCookie("username");
 var userpass = getCookie("userpass");

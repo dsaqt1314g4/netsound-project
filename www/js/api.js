@@ -306,7 +306,7 @@ function getSong(url, success){
 	});
 }
 
-function createSong(url, type, sting, success){
+function createSong(url, type, song, success){
 	$.ajax({
 		url : url,
 		type : 'POST',
