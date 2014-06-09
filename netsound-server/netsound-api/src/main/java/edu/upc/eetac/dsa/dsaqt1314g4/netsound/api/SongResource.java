@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 import javax.sql.DataSource;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -48,9 +49,10 @@ public class SongResource {
 	private Application app;
 	@Context
 	private SecurityContext security;
-	
+
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
+	// Get de todas las canciones con Querys
 	@GET
 	@Produces(MediaType.NETSOUND_API_SONG_COLLECTION)
 	public SongCollection getSongs(@QueryParam("length") int length,
@@ -104,7 +106,8 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
-				song.setSongURL(app.getProperties().get("SongBaseURL") + song.getSongid());
+				song.setSongURL(app.getProperties().get("SongBaseURL")
+						+ song.getSongid());
 				songs.addSong(song);
 			}
 		} catch (SQLException e) {
@@ -129,6 +132,7 @@ public class SongResource {
 
 	}
 
+	// Get de todas las canciones de un usuario
 	@GET
 	@Path("/username/{username}")
 	@Produces(MediaType.NETSOUND_API_SONG_COLLECTION)
@@ -148,7 +152,8 @@ public class SongResource {
 		PreparedStatement stmt = null;
 		try {
 			boolean updateFromLast = after > 0;
-			stmt = conn.prepareStatement(buildGetSongsQueryByUsername(updateFromLast));
+			stmt = conn
+					.prepareStatement(buildGetSongsQueryByUsername(updateFromLast));
 			stmt.setString(1, username);
 			if (updateFromLast) {
 				stmt.setTimestamp(2, new Timestamp(after));
@@ -171,7 +176,8 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
-				song.setSongURL(app.getProperties().get("SongBaseURL") + song.getSongid());
+				song.setSongURL(app.getProperties().get("SongBaseURL")
+						+ song.getSongid());
 				songs.addSong(song);
 			}
 		} catch (SQLException e) {
@@ -195,7 +201,8 @@ public class SongResource {
 			return "select * from Songs where username = ? and last_modified < ifnull(?, now())  order by last_modified desc limit ?";
 
 	}
-	
+
+	// Get de una cancion en concreto
 	@GET
 	@Path("/{songid}")
 	@Produces(MediaType.NETSOUND_API_SONG)
@@ -203,9 +210,9 @@ public class SongResource {
 			@Context Request request) {
 		// Create CacheControl
 		CacheControl cc = new CacheControl();
-		
+
 		Song song = getSongFromDatabase(songid);
-		
+
 		// Calculate the ETag on last modified date of user resource
 		EntityTag eTag = new EntityTag(Long.toString(song.getDate()));
 
@@ -224,9 +231,10 @@ public class SongResource {
 		rb = Response.ok(song).cacheControl(cc).tag(eTag);
 
 		return rb.build();
-		
+
 	}
 
+	// Funcion para devolver un cancion segun su id
 	private Song getSongFromDatabase(String songid) {
 		Song song = new Song();
 
@@ -252,7 +260,8 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
-				song.setSongURL(app.getProperties().get("imgBaseURL") + song.getSongid());
+				song.setSongURL(app.getProperties().get("imgBaseURL")
+						+ song.getSongid());
 			} else {
 				throw new NotFoundException("There's no Song with songid="
 						+ songid);
@@ -277,14 +286,15 @@ public class SongResource {
 		return "select * from Songs where songid = ?";
 	}
 
+	// Post de una cancion
 	@POST
 	@Produces(MediaType.NETSOUND_API_SONG)
-	public Song uploadSong(@FormDataParam("song") InputStream file) {
+	public Song uploadSong(@FormDataParam("songfile") InputStream file,
+			@FormDataParam("song") String Song_name,
+			@FormDataParam("album") String Album, 
+			@FormDataParam("description") String Description,
+			@FormDataParam("style") String Style) {
 		Song song = new Song();
-		song.setAlbum("LOLO");
-		song.setSong_name("LOLO");
-		song.setDescription("kñljkljl jkljl");
-		song.setStyle("LOLO");
 		UUID uuid = writeSong(file);
 		Connection conn = null;
 		try {
@@ -296,20 +306,20 @@ public class SongResource {
 
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(buildPostSong(), Statement.RETURN_GENERATED_KEYS);
+			stmt = conn.prepareStatement(buildPostSong(),
+					Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, uuid.toString());
 			stmt.setString(2, security.getUserPrincipal().getName());
-			stmt.setString(3, song.getSong_name());
-			stmt.setString(4, song.getAlbum());
-			stmt.setString(5, song.getDescription());
-			stmt.setString(6, song.getStyle());
+			stmt.setString(3, Song_name);
+			stmt.setString(4, Album);
+			stmt.setString(5, Description);
+			stmt.setString(6, Style);
 			stmt.setInt(7, 0);
 			stmt.setInt(8, 0);
 			stmt.executeUpdate();
 			ResultSet rs = stmt.getGeneratedKeys();
 			if (rs.next()) {
 				String songid = rs.getString(0);
-
 				song = getSongFromDatabase(songid);
 				song.setSongURL(app.getProperties().get("") + song.getSongid());
 			} else {
@@ -328,7 +338,7 @@ public class SongResource {
 		}
 		return song;
 	}
-	
+
 	private String buildPostSong() {
 		return "insert into Songs (songid,username, song_name, album_name, description, style, score, num_votes) value (?,?,?,?,?,?,?,?)";
 	}
@@ -360,6 +370,7 @@ public class SongResource {
 		return uuid;
 	}
 
+	// Put para puntuar una cancion
 	@PUT
 	@Path("/{songid}")
 	@Consumes(MediaType.NETSOUND_API_SONG)
@@ -379,6 +390,7 @@ public class SongResource {
 		}
 
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		try {
 			stmt = conn.prepareStatement(buildGetSongById());
 			stmt.setInt(1, Integer.valueOf(songid));
@@ -403,10 +415,10 @@ public class SongResource {
 			res_score = (Integer.valueOf(song.getScore()
 					+ Integer.valueOf(score)))
 					/ votantes;
-			stmt = conn.prepareStatement(buildUpdateSting());
-			stmt.setDouble(1, res_score);
-			stmt.setInt(2, votantes);
-			stmt.setString(3, songid);
+			stmt2 = conn.prepareStatement(buildUpdateSting());
+			stmt2.setDouble(1, res_score);
+			stmt2.setInt(2, votantes);
+			stmt2.setString(3, songid);
 			int rows = stmt.executeUpdate();
 
 			if (rows == 1)
@@ -423,6 +435,8 @@ public class SongResource {
 			try {
 				if (stmt != null)
 					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
 				conn.close();
 			} catch (SQLException e) {
 			}
@@ -434,22 +448,22 @@ public class SongResource {
 	private String buildUpdateSting() {
 		return "update Songs set score= ?, num_votes = ? where stingid=?";
 	}
-	
-	//STINGS DE SONG
-	
+
+	// STINGS DE SONG
+
+	// Get de todos los stings de una cancion
 	@Path("/{songid}/stings")
 	@GET
 	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
 	public StingCollection getUserFollowingStings(
 			@PathParam("songid") String songid) {
 		StingCollection stings = new StingCollection();
-		stings = getStingsFromDatabase(songid);
+		stings = getStingsFromDatabaseBySongid(songid);
 		return stings;
 
 	}
 
-	
-	private StingCollection getStingsFromDatabase(String songid) {
+	private StingCollection getStingsFromDatabaseBySongid(String songid) {
 		StingCollection stings = new StingCollection();
 		Connection conn = null;
 		try {
@@ -461,7 +475,7 @@ public class SongResource {
 
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(buildGetStings());
+			stmt = conn.prepareStatement(buildGetStingsBySongid());
 			stmt.setString(1, songid);
 			ResultSet rs = stmt.executeQuery();
 			boolean first = true;
@@ -494,9 +508,122 @@ public class SongResource {
 		}
 		return stings;
 	}
-	
-	private String buildGetStings() {
+
+	private String buildGetStingsBySongid() {
 
 		return "select s.* from Stings s, Stings_Song ss where s.stingid= ss.stingid and ss.songid = ?   order by last_modified desc";
 	}
+
+	// Post de un string en una cancion
+	@Path("/{songid}/stings")
+	@POST
+	@Consumes(MediaType.NETSOUND_API_STING)
+	@Produces(MediaType.NETSOUND_API_STING)
+	public Sting createSongSting(@PathParam("songid") String songid, Sting sting) {
+		validateSting(sting);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		try {
+			stmt = conn.prepareStatement(buildInsertSting(), Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, security.getUserPrincipal().getName());
+			stmt.setString(2, sting.getContent());
+			stmt.executeUpdate();
+			ResultSet rs = stmt.getGeneratedKeys();
+			if (rs.next()) {
+				int stingid = rs.getInt(1);
+
+				sting = getStingFromDatabaseByStingid(Integer.toString(stingid));
+			} else {
+				// Something has failed...
+			}
+			stmt2 = conn.prepareStatement(buildInsertSting());
+			stmt2.setInt(1, Integer.valueOf(sting.getStingid()));
+			stmt2.setString(2, songid);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return sting;
+	}
+
+	private void validateSting(Sting sting) {
+		if (sting.getContent() == null)
+			throw new BadRequestException("Content can't be null.");
+		if (sting.getContent().length() > 500)
+			throw new BadRequestException(
+					"Content can't be greater than 500 characters.");
+	}
+
+	private String buildInsertSting() {
+		return "insert into Stings (username, content) value (?, ?)";
+	}
+
+	private String buildInsertSongSting() {
+		return "insert into Stings_Song (stingid, songid) value (?, ?)";
+	}
+	
+	private Sting getStingFromDatabaseByStingid(String stingid) {
+		Sting sting = new Sting();
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetStings());
+			stmt.setInt(1, Integer.valueOf(stingid));
+			ResultSet rs = stmt.executeQuery();
+			long oldestTimestamp = 0;
+			if (rs.next()) {
+				sting.setUsername(rs.getString("username"));
+				sting.setContent(rs.getString("content"));
+				sting.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
+				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
+				sting.setLastModified(oldestTimestamp);
+				
+			}else {
+				// Something has failed...
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+		return sting;
+	}
+
+	private String buildGetStings() {
+
+		return "select * from Stings where stingid= ? order by last_modified desc";
+	}
+
 }

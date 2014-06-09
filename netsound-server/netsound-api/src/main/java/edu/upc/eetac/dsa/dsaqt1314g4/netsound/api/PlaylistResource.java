@@ -41,11 +41,13 @@ import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.SongCollection;
 public class PlaylistResource {
 	@Context
 	private Application app;
-	
+
 	@Context
 	private SecurityContext security;
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
+	
+	//Get de un listado de playlist
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST_COLLECTION)
 	public PlaylistCollection getPlaylists(@QueryParam("length") int length,
@@ -123,6 +125,7 @@ public class PlaylistResource {
 
 	}
 
+	//Get de un listado de playlist de un usuario concreto
 	@Path("/username/{username}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST_COLLECTION)
@@ -204,7 +207,7 @@ public class PlaylistResource {
 			return "select * from Playlists where username = ? and playlist_name like ? and style like ? and last_modified < ifnull(?, now())  order by last_modified desc limit ?";
 
 	}
-
+	//Get de una playlist concreta
 	@Path("/{playlistid}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST)
@@ -212,10 +215,11 @@ public class PlaylistResource {
 			@Context Request request) {
 		// Create CacheControl
 		CacheControl cc = new CacheControl();
-		
+
 		Playlist playlist = getPlaylistFromDatabase(playlistid);
 		// Calculate the ETag on last modified date of user resource
-		EntityTag eTag = new EntityTag(Long.toString(playlist.getLastModified()));
+		EntityTag eTag = new EntityTag(
+				Long.toString(playlist.getLastModified()));
 
 		// Verify if it matched with etag available in http request
 		Response.ResponseBuilder rb = request.evaluatePreconditions(eTag);
@@ -234,6 +238,7 @@ public class PlaylistResource {
 		return rb.build();
 	}
 
+	//Funcion para obtener una playlist segun su id
 	private Playlist getPlaylistFromDatabase(String playlistid) {
 		Playlist playlist = new Playlist();
 
@@ -272,11 +277,19 @@ public class PlaylistResource {
 
 		return playlist;
 	}
+
+	private String buildGetPlaylistById() {
+
+		return "select * from Playlists where playlistid= ?";
+	}
 	
+	//Get para obtener el listado de canciones de una playlist
 	@Path("/{playlistid}/songs")
 	@GET
 	@Produces(MediaType.NETSOUND_API_SONG_COLLECTION)
-	public SongCollection getSongs(@QueryParam("length") int length,
+	public SongCollection getSongsFromPlaylist(
+			@PathParam("playlistid") String playlistid,
+			@QueryParam("length") int length,
 			@QueryParam("before") long before, @QueryParam("after") long after) {
 		SongCollection songs = new SongCollection();
 
@@ -290,17 +303,18 @@ public class PlaylistResource {
 		PreparedStatement stmt = null;
 		try {
 			boolean updateFromLast = after > 0;
-			stmt = conn.prepareStatement(buildGetPlaylistSongsQuery(updateFromLast));
-			
+			stmt = conn
+					.prepareStatement(buildGetPlaylistSongsQuery(updateFromLast));
+			stmt.setString(1, playlistid);
 			if (updateFromLast) {
-				stmt.setTimestamp(3, new Timestamp(after));
+				stmt.setTimestamp(2, new Timestamp(after));
 			} else {
 				if (before > 0)
-					stmt.setTimestamp(3, new Timestamp(before));
+					stmt.setTimestamp(2, new Timestamp(before));
 				else
-					stmt.setTimestamp(3, null);
+					stmt.setTimestamp(2, null);
 				length = (length <= 0) ? 20 : length;
-				stmt.setInt(4, length);
+				stmt.setInt(3, length);
 			}
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -313,7 +327,8 @@ public class PlaylistResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
-				song.setSongURL(app.getProperties().get("SongBaseURL") + song.getSongid());
+				song.setSongURL(app.getProperties().get("SongBaseURL")
+						+ song.getSongid());
 				songs.addSong(song);
 			}
 		} catch (SQLException e) {
@@ -332,18 +347,13 @@ public class PlaylistResource {
 
 	private String buildGetPlaylistSongsQuery(boolean updateFromLast) {
 		if (updateFromLast)
-			return "select s.* from Songs s, Playlist_Relation pr where s.songid = pr.songid and pr.playlistid= ?  pr.last_modified > ? order by last_modified desc";
+			return "select s.* from Songs s, Playlist_Relation pr where s.songid = pr.songid and pr.playlistid= ? and  pr.last_modified > ? order by last_modified desc";
 		else
-			return "select s.* from Songs s, Playlist_Relation pr where s.songid = pr.songid and pr.playlistid= ?  pr.last_modified < ifnull(?, now())  order by last_modified desc limit ?";
+			return "select s.* from Songs s, Playlist_Relation pr where s.songid = pr.songid and pr.playlistid= ? and pr.last_modified < ifnull(?, now())  order by last_modified desc limit ?";
 
 	}
 
-	
-	private String buildGetPlaylistById() {
-
-		return "select * from Playlists where playlistid= ?";
-	}
-
+	//Post de una playlist
 	@POST
 	@Produces(MediaType.NETSOUND_API_PLAYLIST)
 	public Playlist uploadPlaylist() {
@@ -361,7 +371,8 @@ public class PlaylistResource {
 
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(buildPostPlaylist(), Statement.RETURN_GENERATED_KEYS);
+			stmt = conn.prepareStatement(buildPostPlaylist(),
+					Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, security.getUserPrincipal().getName());
 			stmt.setString(2, playlist.getPlaylist_name());
 			stmt.setString(3, playlist.getDescription());
@@ -390,11 +401,47 @@ public class PlaylistResource {
 		}
 		return playlist;
 	}
-	
+
 	private String buildPostPlaylist() {
 		return "insert into Playlists (username, playlist_name, description, style, score, num_votes) value (?,?,?,?,?,?)";
 	}
-	
-	
-	
+
+	// Post de una cancion en una playllist
+	@Path("/{playlistid}/songs")
+	@POST
+	@Consumes(MediaType.NETSOUND_API_SONG)
+	public void uploadSongInToPlaylist(
+			@PathParam("playlistid") String playlistid, Song song) {
+		Playlist playlist = getPlaylistFromDatabase(playlistid);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildPostSongInToPlaylist());
+			stmt.setString(1, song.getSongid());
+			stmt.setInt(2, Integer.valueOf(playlist.getPlaylistid()));
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+
+	private String buildPostSongInToPlaylist() {
+		return "insert into Playlist_Relation (songid, playlistid) value (?,?)";
+	}
+
 }
