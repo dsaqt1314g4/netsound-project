@@ -1,4 +1,4 @@
-var NETSOUND_API_HOME="http://localhost:8080/netsound-api";
+var NETSOUND_API_HOME="http://localhost:8080/netsound-api/";
 
 function Link(rel, linkheader){
 	this.rel = rel;
@@ -23,7 +23,6 @@ function buildLinks(linkheaders){
 
 function User(user){
 	this.username = user.username;
-	this.userid = user.userid;
 	this.userpass = user.userpass;
 	this.description = user.description;
 	this.name = user.name;
@@ -33,7 +32,6 @@ function User(user){
 	this.getLink = function(rel){
 		return this.links[rel];
 	}
-	console.log(this.getLink('user'));
 	
 }
 function UserCollection(userCollection){
@@ -242,7 +240,7 @@ function getUser(url, success){
 	});
 }
 
-function createUser(url, type, sting, success){
+function createUser(url, type, user, success){
 	$.ajax({
 		url : url,
 		type : 'POST',
