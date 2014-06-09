@@ -28,7 +28,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -37,12 +39,16 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Song;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.SongCollection;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Sting;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.StingCollection;
 
 @Path("/songs")
 public class SongResource {
 	@Context
 	private Application app;
+	@Context
 	private SecurityContext security;
+	
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
 	@GET
@@ -98,7 +104,7 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
-				song.setSongURL(app.getProperties().get("imgBaseURL") + song.getSongid());
+				song.setSongURL(app.getProperties().get("SongBaseURL") + song.getSongid());
 				songs.addSong(song);
 			}
 		} catch (SQLException e) {
@@ -165,7 +171,7 @@ public class SongResource {
 				song.setStyle(rs.getString("style"));
 				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
-				song.setSongURL(app.getProperties().get("imgBaseURL") + song.getSongid());
+				song.setSongURL(app.getProperties().get("SongBaseURL") + song.getSongid());
 				songs.addSong(song);
 			}
 		} catch (SQLException e) {
@@ -193,11 +199,32 @@ public class SongResource {
 	@GET
 	@Path("/{songid}")
 	@Produces(MediaType.NETSOUND_API_SONG)
-	public Song getSong(@PathParam("songid") String songid,
+	public Response getSong(@PathParam("songid") String songid,
 			@Context Request request) {
-		Song song = new Song();
-		song = getSongFromDatabase(songid);
-		return song;
+		// Create CacheControl
+		CacheControl cc = new CacheControl();
+		
+		Song song = getSongFromDatabase(songid);
+		
+		// Calculate the ETag on last modified date of user resource
+		EntityTag eTag = new EntityTag(Long.toString(song.getDate()));
+
+		// Verify if it matched with etag available in http request
+		Response.ResponseBuilder rb = request.evaluatePreconditions(eTag);
+
+		// If ETag matches the rb will be non-null;
+		// Use the rb to return the response without any further processing
+		if (rb != null) {
+			return rb.cacheControl(cc).tag(eTag).build();
+		}
+
+		// If rb is null then either it is first time request; or resource is
+		// modified
+		// Get the updated representation and return with Etag attached to it
+		rb = Response.ok(song).cacheControl(cc).tag(eTag);
+
+		return rb.build();
+		
 	}
 
 	private Song getSongFromDatabase(String songid) {
@@ -214,7 +241,7 @@ public class SongResource {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(buildGetSongById());
-			stmt.setInt(1, Integer.valueOf(songid));
+			stmt.setString(1, songid);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				song.setSongid(rs.getString("songid"));
@@ -271,7 +298,7 @@ public class SongResource {
 		try {
 			stmt = conn.prepareStatement(buildPostSong(), Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, uuid.toString());
-			stmt.setString(2, "alejandro.jimenez");// System.out.println(security.getUserPrincipal().getName());
+			stmt.setString(2, security.getUserPrincipal().getName());
 			stmt.setString(3, song.getSong_name());
 			stmt.setString(4, song.getAlbum());
 			stmt.setString(5, song.getDescription());
@@ -406,5 +433,70 @@ public class SongResource {
 
 	private String buildUpdateSting() {
 		return "update Songs set score= ?, num_votes = ? where stingid=?";
+	}
+	
+	//STINGS DE SONG
+	
+	@Path("/{songid}/stings")
+	@GET
+	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
+	public StingCollection getUserFollowingStings(
+			@PathParam("songid") String songid) {
+		StingCollection stings = new StingCollection();
+		stings = getStingsFromDatabase(songid);
+		return stings;
+
+	}
+
+	
+	private StingCollection getStingsFromDatabase(String songid) {
+		StingCollection stings = new StingCollection();
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetStings());
+			stmt.setString(1, songid);
+			ResultSet rs = stmt.executeQuery();
+			boolean first = true;
+			long oldestTimestamp = 0;
+			while (rs.next()) {
+				Sting sting = new Sting();
+				sting.setUsername(rs.getString("username"));
+				sting.setContent(rs.getString("content"));
+				sting.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
+				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
+				sting.setLastModified(oldestTimestamp);
+				if (first) {
+					first = false;
+					stings.setNewestTimestamp(sting.getLastModified());
+				}
+				stings.addSting(sting);
+			}
+			stings.setOldestTimestamp(oldestTimestamp);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+		return stings;
+	}
+	
+	private String buildGetStings() {
+
+		return "select s.* from Stings s, Stings_Song ss where s.stingid= ss.stingid and ss.songid = ?   order by last_modified desc";
 	}
 }

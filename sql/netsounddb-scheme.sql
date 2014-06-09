@@ -8,6 +8,7 @@ create table users (
 	userpass	char(32) not null,
 	email		varchar(255) not null,
 	name	varchar(70) not null,
+	imageid varchar(36),
 	description	varchar(500) not  null
 );
  
@@ -70,8 +71,11 @@ create table Stings_Playlist (
 );
 
 create table Playlist_Relation(
-	songid int,
-	playlistid int
+	songid varchar(36) not null,
+	playlistid int,
+	last_modified	timestamp,
+	foreign key(songid) references Songs(songid),
+	foreign key(playlistid) references Playlists(playlistid)
 );
 
 create table Follow(
