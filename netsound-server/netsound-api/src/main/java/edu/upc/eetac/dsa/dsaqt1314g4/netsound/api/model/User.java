@@ -28,6 +28,7 @@ public class User {
 	private String description;
 	private String userpass;
 	private String email;
+	private long date_create;
 	public List<Link> getLinks() {
 		return links;
 	}
@@ -63,5 +64,11 @@ public class User {
 	}
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	public long getDate_create() {
+		return date_create;
+	}
+	public void setDate_create(long date_create) {
+		this.date_create = date_create;
 	}
 }

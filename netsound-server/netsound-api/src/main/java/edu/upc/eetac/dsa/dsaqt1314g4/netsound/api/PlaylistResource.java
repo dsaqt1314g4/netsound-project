@@ -36,6 +36,8 @@ import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Playlist;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.PlaylistCollection;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Song;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.SongCollection;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Sting;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.StingCollection;
 
 @Path("/playlist")
 public class PlaylistResource {
@@ -46,8 +48,7 @@ public class PlaylistResource {
 	private SecurityContext security;
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
-	
-	//Get de un listado de playlist
+	// Get de un listado de playlist
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST_COLLECTION)
 	public PlaylistCollection getPlaylists(@QueryParam("length") int length,
@@ -125,7 +126,7 @@ public class PlaylistResource {
 
 	}
 
-	//Get de un listado de playlist de un usuario concreto
+	// Get de un listado de playlist de un usuario concreto
 	@Path("/username/{username}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST_COLLECTION)
@@ -207,7 +208,8 @@ public class PlaylistResource {
 			return "select * from Playlists where username = ? and playlist_name like ? and style like ? and last_modified < ifnull(?, now())  order by last_modified desc limit ?";
 
 	}
-	//Get de una playlist concreta
+
+	// Get de una playlist concreta
 	@Path("/{playlistid}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_PLAYLIST)
@@ -238,7 +240,7 @@ public class PlaylistResource {
 		return rb.build();
 	}
 
-	//Funcion para obtener una playlist segun su id
+	// Funcion para obtener una playlist segun su id
 	private Playlist getPlaylistFromDatabase(String playlistid) {
 		Playlist playlist = new Playlist();
 
@@ -282,8 +284,8 @@ public class PlaylistResource {
 
 		return "select * from Playlists where playlistid= ?";
 	}
-	
-	//Get para obtener el listado de canciones de una playlist
+
+	// Get para obtener el listado de canciones de una playlist
 	@Path("/{playlistid}/songs")
 	@GET
 	@Produces(MediaType.NETSOUND_API_SONG_COLLECTION)
@@ -353,7 +355,7 @@ public class PlaylistResource {
 
 	}
 
-	//Post de una playlist
+	// Post de una playlist
 	@POST
 	@Produces(MediaType.NETSOUND_API_PLAYLIST)
 	public Playlist uploadPlaylist() {
@@ -444,4 +446,304 @@ public class PlaylistResource {
 		return "insert into Playlist_Relation (songid, playlistid) value (?,?)";
 	}
 
+	// Put para puntuar una cancion
+	@PUT
+	@Path("/{playlistid}")
+	@Consumes(MediaType.NETSOUND_API_PLAYLIST)
+	@Produces(MediaType.NETSOUND_API_PLAYLIST)
+	public Playlist updatePlaylist(@PathParam("playlistid") String playlistid,
+			Playlist playlist, @FormDataParam("score") int score) {
+		Connection conn = null;
+		int votantes;
+		double res_score;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		try {
+			stmt = conn.prepareStatement(buildGetPlaylistById());
+			stmt.setInt(1, Integer.valueOf(playlistid));
+			ResultSet rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				playlist.setPlaylistid(String.valueOf(rs.getInt("playlistid")));
+				playlist.setUsername(rs.getString("username"));
+				playlist.setPlaylist_name(rs.getString("playlist_name"));
+				playlist.setDescription(rs.getString("description"));
+				playlist.setStyle(rs.getString("style"));
+				playlist.setScore(rs.getString("score"));
+				playlist.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
+			} else {
+				throw new NotFoundException(
+						"There's no Playlist with playlistid=" + playlistid);
+			}
+
+			votantes = Integer.valueOf(playlist.getNum_votes()) + 1;
+			res_score = ((Integer.valueOf(playlist.getScore()) + Integer
+					.valueOf(score))) / votantes;
+			stmt2 = conn.prepareStatement(buildUpdateValoracion());
+			stmt2.setDouble(1, res_score);
+			stmt2.setInt(2, votantes);
+			stmt2.setString(3, playlistid);
+			int rows = stmt.executeUpdate();
+
+			if (rows == 1)
+				playlist = getPlaylistFromDatabase(playlistid);
+			else {
+				throw new NotFoundException(
+						"There's no Playlist with playlistid=" + playlistid);
+			}
+
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return playlist;
+	}
+
+	private String buildUpdateValoracion() {
+		return "update Playlists set score= ?, num_votes = ? where stingid=?";
+	}
+
+	// STINGS DE PLAYLIST
+
+	// Get de todos los stings de una cancion
+	@Path("/{playlistid}/stings")
+	@GET
+	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
+	public StingCollection getPlaylistStings(
+			@PathParam("playlistid") String playlistid) {
+		StingCollection stings = new StingCollection();
+		stings = getStingsFromDatabaseBySongid(playlistid);
+		return stings;
+
+	}
+
+	private StingCollection getStingsFromDatabaseBySongid(String playlistid) {
+		StingCollection stings = new StingCollection();
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetStingsByPlaylistid());
+			stmt.setString(1, playlistid);
+			ResultSet rs = stmt.executeQuery();
+			boolean first = true;
+			long oldestTimestamp = 0;
+			while (rs.next()) {
+				Sting sting = new Sting();
+				sting.setUsername(rs.getString("username"));
+				sting.setContent(rs.getString("content"));
+				sting.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
+				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
+				sting.setLastModified(oldestTimestamp);
+				if (first) {
+					first = false;
+					stings.setNewestTimestamp(sting.getLastModified());
+				}
+				stings.addSting(sting);
+			}
+			stings.setOldestTimestamp(oldestTimestamp);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+		return stings;
+	}
+
+	private String buildGetStingsByPlaylistid() {
+
+		return "select s.* from Stings s, Stings_Playlist sp where s.stingid= sp.stingid and sp.playlistid = ?   order by last_modified desc";
+	}
+
+	// Post de un string en una cancion
+	@Path("/{playlisid}/stings")
+	@POST
+	@Consumes(MediaType.NETSOUND_API_STING)
+	@Produces(MediaType.NETSOUND_API_STING)
+	public Sting createPlaylistSting(
+			@PathParam("plailistid") String plailistid, Sting sting) {
+		validateSting(sting);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		try {
+			stmt = conn.prepareStatement(buildInsertSting(),
+					Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, security.getUserPrincipal().getName());
+			stmt.setString(2, sting.getContent());
+			stmt.executeUpdate();
+			ResultSet rs = stmt.getGeneratedKeys();
+			if (rs.next()) {
+				int stingid = rs.getInt(1);
+
+				sting = getStingFromDatabaseByStingid(Integer.toString(stingid));
+			} else {
+				// Something has failed...
+			}
+			stmt2 = conn.prepareStatement(buildInsertPlaylistSting());
+			stmt2.setInt(1, Integer.valueOf(sting.getStingid()));
+			stmt2.setString(2, plailistid);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return sting;
+	}
+
+	private void validateSting(Sting sting) {
+		if (sting.getContent() == null)
+			throw new BadRequestException("Content can't be null.");
+		if (sting.getContent().length() > 500)
+			throw new BadRequestException(
+					"Content can't be greater than 500 characters.");
+	}
+
+	private String buildInsertSting() {
+		return "insert into Stings (username, content) value (?, ?)";
+	}
+
+	private String buildInsertPlaylistSting() {
+		return "insert into Stings_Playlist (stingid, playlistid) value (?, ?)";
+	}
+
+	private Sting getStingFromDatabaseByStingid(String stingid) {
+		Sting sting = new Sting();
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetStings());
+			stmt.setInt(1, Integer.valueOf(stingid));
+			ResultSet rs = stmt.executeQuery();
+			long oldestTimestamp = 0;
+			if (rs.next()) {
+				sting.setUsername(rs.getString("username"));
+				sting.setContent(rs.getString("content"));
+				sting.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
+				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
+				sting.setLastModified(oldestTimestamp);
+
+			} else {
+				// Something has failed...
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+		return sting;
+	}
+
+	private String buildGetStings() {
+
+		return "select * from Stings where stingid= ?";
+	}
+	
+	@DELETE
+	@Path("/{playlistid}/stings/{stingid}")
+	public void deleteSting(@PathParam("playlistid") String playlistid, @PathParam("stingid") String stingid) {
+		validateUserSting(stingid);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+	
+		PreparedStatement stmt = null;
+		try {
+			String sql = buildDeleteSting();
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, Integer.valueOf(stingid));
+	
+			int rows = stmt.executeUpdate();
+			if (rows == 0)
+				throw new NotFoundException("There's no sting with stingid="
+						+ stingid);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+	
+	private String buildDeleteSting() {
+		return "delete from Stings where stingid=?";
+	}
+	
+	private void validateUserSting(String stingid) {
+		Sting currentSting = getStingFromDatabaseByStingid(stingid);
+		if (!security.getUserPrincipal().getName()
+				.equals(currentSting.getUsername()))
+			throw new ForbiddenException(
+					"You are not allowed to modify this sting.");
+	}
 }

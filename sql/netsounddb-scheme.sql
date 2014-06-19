@@ -9,6 +9,7 @@ create table users (
 	email		varchar(255) not null,
 	name	varchar(70) not null,
 	imageid varchar(36),
+	date_create	timestamp,
 	description	varchar(500) not  null
 );
  
@@ -59,14 +60,14 @@ create table Stings (
 create table Stings_Song (
 	stingid int not null,
 	songid varchar(36) not null,
-	foreign key(stingid) references Stings(stingid),
+	foreign key(stingid) references Stings(stingid) on delete cascade,
 	foreign key(songid) references Songs(songid)
 );
 
 create table Stings_Playlist (
 	stingid int not null,
 	playlistid int not null,
-	foreign key(stingid) references Stings(stingid),
+	foreign key(stingid) references Stings(stingid) on delete cascade,
 	foreign key(playlistid) references Playlists(playlistid)
 );
 
@@ -75,7 +76,7 @@ create table Playlist_Relation(
 	playlistid int,
 	last_modified	timestamp,
 	foreign key(songid) references Songs(songid),
-	foreign key(playlistid) references Playlists(playlistid)
+	foreign key(playlistid) references Playlists(playlistid) on delete cascade
 );
 
 create table Follow(

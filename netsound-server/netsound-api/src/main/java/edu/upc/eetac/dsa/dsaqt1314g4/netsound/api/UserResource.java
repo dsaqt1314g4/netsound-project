@@ -9,16 +9,23 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Song;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Sting;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.StingCollection;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.User;
@@ -35,7 +42,34 @@ public class UserResource {
 	@Path("/{username}")
 	@GET
 	@Produces(MediaType.NETSOUND_API_USER)
-	public User getUser(@PathParam("username") String username) {
+	public Response getUser(@PathParam("username") String username,
+			@Context Request request) {
+		// Create CacheControl
+		CacheControl cc = new CacheControl();
+
+		User user = getUserFromDatabase(username);
+
+		// Calculate the ETag on last modified date of user resource
+		EntityTag eTag = new EntityTag(Long.toString(user.getDate_create()));
+
+		// Verify if it matched with etag available in http request
+		Response.ResponseBuilder rb = request.evaluatePreconditions(eTag);
+
+		// If ETag matches the rb will be non-null;
+		// Use the rb to return the response without any further processing
+		if (rb != null) {
+			return rb.cacheControl(cc).tag(eTag).build();
+		}
+
+		// If rb is null then either it is first time request; or resource is
+		// modified
+		// Get the updated representation and return with Etag attached to it
+		rb = Response.ok(user).cacheControl(cc).tag(eTag);
+
+		return rb.build();
+	}
+	
+	private User getUserFromDatabase(String username) {
 		User user = new User();
 
 		Connection conn = null;
@@ -70,7 +104,6 @@ public class UserResource {
 
 		return user;
 	}
-
 	private String buildGetUserByUsername() {
 
 		return "select * from users where username = ?";
@@ -165,6 +198,137 @@ public class UserResource {
 	}
 	
 	
+	
+	
+	@POST
+	@Consumes(MediaType.NETSOUND_API_USER)
+	@Produces(MediaType.NETSOUND_API_USER)
+	public User createUser(User user) {
+		validatePostUser(user);
+		if(user.getUsername().equals(getUserFromDatabase(user.getUsername()).getUsername())){
+			throw new BadRequestException("There is already a user with this Username");
+		}
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		try {
+			stmt = conn.prepareStatement(buildCreateUser(),
+					Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, user.getUsername());
+			stmt.setString(2, user.getUserpass());
+			stmt.setString(3, user.getName());
+			if (user.getDescription() == null) {
+				user.setDescription("I'm always tired, because I'm a superhero at night");
+			}
+			stmt.setString(4, user.getDescription());
+			stmt.setString(5, user.getEmail());
+			stmt.executeUpdate();
+			ResultSet rs = stmt.getGeneratedKeys();
+			if (rs.next()) {
+				String username = rs.getString(1);
+				user = getUserFromDatabase(username);
+				stmt2 = conn.prepareStatement(buildCreateUserRole());
+				stmt2.setString(1, user.getUsername());
+				stmt2.executeUpdate();
+			} else {
+
+			}
+
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return user;
+
+	}
+
+
+	private String buildCreateUserRole() {
+		
+		return "insert into user_roles values(?, 'registered')";
+	}
+
+	private void validatePostUser(User user) {
+		if(user.getUsername() == null)
+			throw new BadRequestException ("Username can't be null");
+		if(user.getName() == null)
+			throw new BadRequestException ("Name can't be null");
+		if(user.getUserpass() == null)
+			throw new BadRequestException ("Password can't be null");
+		if(user.getEmail() == null)
+			throw new BadRequestException ("Email can't be null");
+
+	}
+
+	private String buildCreateUser() {
+
+		return "insert into users (username, userpass, name, description, email) values (?, MD5(?), ?, ?, ?);";
+	}
+	
+	@DELETE
+	@Path("/{username}")
+	public void deleteUser(@PathParam("username") String username) {
+		validateUserDelete(username);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+	
+		PreparedStatement stmt = null;
+		try {
+			String sql = buildDeleteUser();
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1, username);
+	
+			int rows = stmt.executeUpdate();
+			if (rows == 0)
+				throw new NotFoundException("There's no User with username="
+						+ username);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+	
+	private String buildDeleteUser() {
+		return "delete from Users where username=?";
+	}
+	
+	private void validateUserDelete(String username) {
+		User currentUser = getUserFromDatabase(username);
+		if (!security.getUserPrincipal().getName()
+				.equals(currentUser.getUsername()))
+			throw new ForbiddenException(
+					"You are not allowed to modify this sting.");
+	}
+	
+	//STINGS de USER
+	
 	@Path("/{username}/stings")
 	@GET
 	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
@@ -194,7 +358,6 @@ public class UserResource {
 	}
 
 	private String buildGetFollowingStings() {
-
 		return "select s.*, u.username from Stings s, Follow f, users u where u.username=f.followingname and s.username=f.followingname and f.followername = ? order by last_modified desc";
 	}
 
@@ -246,14 +409,14 @@ public class UserResource {
 
 	}
 	
+	
+	// Post de un string en una cancion
+	@Path("/stings")
 	@POST
-	@Consumes(MediaType.NETSOUND_API_USER)
-	@Produces(MediaType.NETSOUND_API_USER)
-	public User createUser(User user) {
-		validateUser(user);
-		if(user.getUsername().equals(getUser(user.getUsername()).getUsername())){
-			throw new BadRequestException("There is already a user with this Username");
-		}
+	@Consumes(MediaType.NETSOUND_API_STING)
+	@Produces(MediaType.NETSOUND_API_STING)
+	public Sting createUserSting(Sting sting) {
+		validateSting(sting);
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -263,30 +426,19 @@ public class UserResource {
 		}
 
 		PreparedStatement stmt = null;
-		PreparedStatement stmt2 = null;
 		try {
-			stmt = conn.prepareStatement(buildCreateUser(),
-					Statement.RETURN_GENERATED_KEYS);
-			stmt.setString(1, user.getUsername());
-			stmt.setString(2, user.getUserpass());
-			stmt.setString(3, user.getName());
-			if (user.getDescription() == null) {
-				user.setDescription("I'm always tired, because I'm a superhero at night");
-			}
-			stmt.setString(4, user.getDescription());
-			stmt.setString(5, user.getEmail());
+			stmt = conn.prepareStatement(buildInsertSting(), Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, security.getUserPrincipal().getName());
+			stmt.setString(2, sting.getContent());
 			stmt.executeUpdate();
 			ResultSet rs = stmt.getGeneratedKeys();
 			if (rs.next()) {
-				String username = rs.getString(1);
-				user = getUser(username);
-				stmt2 = conn.prepareStatement(buildCreateUserRole());
-				stmt2.setString(1, user.getUsername());
-				stmt2.executeUpdate();
+				int stingid = rs.getInt(1);
+
+				sting = getStingFromDatabaseByStingid(Integer.toString(stingid));
 			} else {
-
+				// Something has failed...
 			}
-
 		} catch (SQLException e) {
 			throw new ServerErrorException(e.getMessage(),
 					Response.Status.INTERNAL_SERVER_ERROR);
@@ -299,31 +451,112 @@ public class UserResource {
 			}
 		}
 
-		return user;
-
+		return sting;
 	}
 
-
-	private String buildCreateUserRole() {
-		
-		return "insert into user_roles values(?, 'registered')";
+	private void validateSting(Sting sting) {
+		if (sting.getContent() == null)
+			throw new BadRequestException("Content can't be null.");
+		if (sting.getContent().length() > 500)
+			throw new BadRequestException(
+					"Content can't be greater than 500 characters.");
 	}
 
-	private void validateUser(User user) {
-		if(user.getUsername() == null)
-			throw new BadRequestException ("Username can't be null");
-		if(user.getName() == null)
-			throw new BadRequestException ("Name can't be null");
-		if(user.getUserpass() == null)
-			throw new BadRequestException ("Password can't be null");
-		if(user.getEmail() == null)
-			throw new BadRequestException ("Email can't be null");
-
+	private String buildInsertSting() {
+		return "insert into Stings (username, content) value (?, ?)";
 	}
 
-	private String buildCreateUser() {
+	private Sting getStingFromDatabaseByStingid(String stingid) {
+		Sting sting = new Sting();
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
 
-		return "insert into users (username, userpass, name, description, email) values (?, MD5(?), ?, ?, ?);";
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildGetStings());
+			stmt.setInt(1, Integer.valueOf(stingid));
+			ResultSet rs = stmt.executeQuery();
+			long oldestTimestamp = 0;
+			if (rs.next()) {
+				sting.setUsername(rs.getString("username"));
+				sting.setContent(rs.getString("content"));
+				sting.setLastModified(rs.getTimestamp("last_modified")
+						.getTime());
+				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
+				sting.setLastModified(oldestTimestamp);
+				
+			}else {
+				// Something has failed...
+			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+		return sting;
+	}
+
+	private String buildGetStings() {
+
+		return "select * from Stings where stingid= ?";
+	}
+	
+	@DELETE
+	@Path("/stings/{stingid}")
+	public void deleteSting(@PathParam("stingid") String stingid) {
+		validateUserSting(stingid);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+	
+		PreparedStatement stmt = null;
+		try {
+			String sql = buildDeleteSting();
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, Integer.valueOf(stingid));
+	
+			int rows = stmt.executeUpdate();
+			if (rows == 0)
+				throw new NotFoundException("There's no sting with stingid="
+						+ stingid);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+	
+	private String buildDeleteSting() {
+		return "delete from Stings where stingid=?";
+	}
+	
+	private void validateUserSting(String stingid) {
+		Sting currentSting = getStingFromDatabaseByStingid(stingid);
+		if (!security.getUserPrincipal().getName()
+				.equals(currentSting.getUsername()))
+			throw new ForbiddenException(
+					"You are not allowed to modify this sting.");
 	}
 
 }

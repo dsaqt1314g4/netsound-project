@@ -18,6 +18,8 @@ import java.util.UUID;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
@@ -291,7 +293,7 @@ public class SongResource {
 	@Produces(MediaType.NETSOUND_API_SONG)
 	public Song uploadSong(@FormDataParam("songfile") InputStream file,
 			@FormDataParam("song") String Song_name,
-			@FormDataParam("album") String Album, 
+			@FormDataParam("album") String Album,
 			@FormDataParam("description") String Description,
 			@FormDataParam("style") String Style) {
 		Song song = new Song();
@@ -412,10 +414,9 @@ public class SongResource {
 			}
 
 			votantes = Integer.valueOf(song.getNum_votes()) + 1;
-			res_score = (Integer.valueOf(song.getScore()
-					+ Integer.valueOf(score)))
-					/ votantes;
-			stmt2 = conn.prepareStatement(buildUpdateSting());
+			res_score = ((Double.valueOf(song.getScore()) + Integer
+					.valueOf(score))) / votantes;
+			stmt2 = conn.prepareStatement(buildUpdateValoracion());
 			stmt2.setDouble(1, res_score);
 			stmt2.setInt(2, votantes);
 			stmt2.setString(3, songid);
@@ -445,8 +446,8 @@ public class SongResource {
 		return song;
 	}
 
-	private String buildUpdateSting() {
-		return "update Songs set score= ?, num_votes = ? where stingid=?";
+	private String buildUpdateValoracion() {
+		return "update Songs set score= ?, num_votes = ? where songid=?";
 	}
 
 	// STINGS DE SONG
@@ -455,8 +456,7 @@ public class SongResource {
 	@Path("/{songid}/stings")
 	@GET
 	@Produces(MediaType.NETSOUND_API_STING_COLLECTION)
-	public StingCollection getUserFollowingStings(
-			@PathParam("songid") String songid) {
+	public StingCollection getSongStings(@PathParam("songid") String songid) {
 		StingCollection stings = new StingCollection();
 		stings = getStingsFromDatabaseBySongid(songid);
 		return stings;
@@ -532,7 +532,8 @@ public class SongResource {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
 		try {
-			stmt = conn.prepareStatement(buildInsertSting(), Statement.RETURN_GENERATED_KEYS);
+			stmt = conn.prepareStatement(buildInsertSting(),
+					Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, security.getUserPrincipal().getName());
 			stmt.setString(2, sting.getContent());
 			stmt.executeUpdate();
@@ -544,7 +545,7 @@ public class SongResource {
 			} else {
 				// Something has failed...
 			}
-			stmt2 = conn.prepareStatement(buildInsertSting());
+			stmt2 = conn.prepareStatement(buildInsertSongSting());
 			stmt2.setInt(1, Integer.valueOf(sting.getStingid()));
 			stmt2.setString(2, songid);
 		} catch (SQLException e) {
@@ -554,8 +555,8 @@ public class SongResource {
 			try {
 				if (stmt != null)
 					stmt.close();
-				if (stmt != null)
-					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
 				conn.close();
 			} catch (SQLException e) {
 			}
@@ -579,7 +580,7 @@ public class SongResource {
 	private String buildInsertSongSting() {
 		return "insert into Stings_Song (stingid, songid) value (?, ?)";
 	}
-	
+
 	private Sting getStingFromDatabaseByStingid(String stingid) {
 		Sting sting = new Sting();
 		Connection conn = null;
@@ -603,8 +604,8 @@ public class SongResource {
 						.getTime());
 				oldestTimestamp = rs.getTimestamp("last_modified").getTime();
 				sting.setLastModified(oldestTimestamp);
-				
-			}else {
+
+			} else {
 				// Something has failed...
 			}
 		} catch (SQLException e) {
@@ -623,7 +624,54 @@ public class SongResource {
 
 	private String buildGetStings() {
 
-		return "select * from Stings where stingid= ? order by last_modified desc";
+		return "select * from Stings where stingid= ?";
+	}
+	
+	@DELETE
+	@Path("/{songid}/stings/{stingid}")
+	public void deleteSting(@PathParam("songid") String songid, @PathParam("stingid") String stingid) {
+		validateUserSting(stingid);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+	
+		PreparedStatement stmt = null;
+		try {
+			String sql = buildDeleteSting();
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, Integer.valueOf(stingid));
+	
+			int rows = stmt.executeUpdate();
+			if (rows == 0)
+				throw new NotFoundException("There's no sting with stingid="
+						+ stingid);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+	
+	private String buildDeleteSting() {
+		return "delete from Stings where stingid=?";
+	}
+	
+	private void validateUserSting(String stingid) {
+		Sting currentSting = getStingFromDatabaseByStingid(stingid);
+		if (!security.getUserPrincipal().getName()
+				.equals(currentSting.getUsername()))
+			throw new ForbiddenException(
+					"You are not allowed to modify this sting.");
 	}
 
 }
