@@ -1,5 +1,6 @@
 body{
-	background: url(http://localhost/signin.jpg)
+	background: url(/signin.jpg);
+	background-color: #362;
 }
 legend{
 	color:#ffffff;

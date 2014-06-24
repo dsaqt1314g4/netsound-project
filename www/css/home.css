@@ -1,0 +1,14 @@
+body{
+background: url(/equip.jpg) no-repeat fixed;
+background-color: #362;
+
+    
+}
+
+.container #homepg {
+
+    margin: 40px auto;
+    background: url(/equip.jpg) no-repeat fixed;
+    border: 10px solid white;
+    border-radius: 30px;
+}
