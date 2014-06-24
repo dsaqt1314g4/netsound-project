@@ -4,7 +4,23 @@ import java.util.List;
 
 import javax.ws.rs.core.Link;
 
+import org.glassfish.jersey.linking.Binding;
+import org.glassfish.jersey.linking.InjectLink;
+import org.glassfish.jersey.linking.InjectLinks;
+import org.glassfish.jersey.linking.InjectLink.Style;
+
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.MediaType;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.SongResource;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.UserResource;
+
 public class Song {
+	@InjectLinks({
+		@InjectLink(resource = SongResource.class, style = Style.ABSOLUTE, rel = "self", title = "Songpage", type = MediaType.NETSOUND_API_SONG, method = "getSong", bindings = @Binding(name = "songid", value = "${instance.songid}")),
+		@InjectLink(resource = SongResource.class, style = Style.ABSOLUTE, rel = "stings", title = "SongStings", type = MediaType.NETSOUND_API_STING, method = "getSongStings", bindings = @Binding(name = "songid", value = "${instance.songid}")),
+		@InjectLink(resource = SongResource.class, style = Style.ABSOLUTE, rel = "create-sting", title = "Create Song Sting", type = MediaType.NETSOUND_API_STING, method = "createSongSting", bindings = @Binding(name = "songid", value = "${instance.songid}")),
+		@InjectLink(resource = SongResource.class, style = Style.ABSOLUTE, rel = "delete-song", title = "Delete Song", type = MediaType.NETSOUND_API_SONG, method = "deleteSong", bindings = @Binding(name = "songid", value = "${instance.songid}")),
+		})
+	
 	private List<Link> links;
 	private String songid;
 	private String username;

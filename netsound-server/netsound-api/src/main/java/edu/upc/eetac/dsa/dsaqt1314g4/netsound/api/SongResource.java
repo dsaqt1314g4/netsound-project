@@ -2,6 +2,7 @@ package edu.upc.eetac.dsa.dsaqt1314g4.netsound.api;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,7 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.UUID;
 
 import javax.sql.DataSource;
@@ -40,10 +40,13 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Playlist;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.PlaylistCollection;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Song;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.SongCollection;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Sting;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.StingCollection;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.User;
 
 @Path("/songs")
 public class SongResource {

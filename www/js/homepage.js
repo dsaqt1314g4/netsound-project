@@ -1,56 +1,22 @@
-$("#navbarid").load("Bar.html");
-var API_URL = "http://localhost:8080/netsound-api/";
+
+var API_URL = "http://147.83.7.158:8080/netsound-api/";
 var username = getCookie("username");
 var userpass = getCookie("userpass");
+
+
 var url = "";
-$.ajaxSetup({
-    headers: { 'Authorization': "Basic "+btoa(username+':'+userpass) }
-});
 
-$(document).ready(function(){
-		loadStings(url = getCookie("followingstings"));
-	});
-
-$("#stings").click(function(e){
+$("#stingshomepg").click(function(e){
 	e.preventDefault();
-
 	loadStings(url = getCookie("followingstings"));
 	});
-$("#songrock").click(function(e){
+$("#songshomepg").click(function(e){
 	e.preventDefault();
-	title = "Most popular Songs";
-	getMostPopularSongs();
-	
+	getFollowingSongs(url = getCookie("followingsongs"));
 	});
-$("#songpop").click(function(e){
+$("#playlistshomepg").click(function(e){
 	e.preventDefault();
-	title = "Most popular Songs";
-	getMostPopularSongs();
-	});
-$("#songjazz").click(function(e){
-	e.preventDefault();
-	title = "Most popular Songs";
-	getMostPopularSongs();
-	});
-$("#playlistrock").click(function(e){
-	e.preventDefault();
-	title = "Most popular Playlists";
-	getMostPopularSongs();
-	});
-$("#playlistpop").click(function(e){
-	e.preventDefault();
-	title = "Most popular Playlists";
-	getMostPopularSongs();
-	});
-$("#playlistjazz").click(function(e){
-	e.preventDefault();
-	title = "Most popular Playlists";
-	getMostPopularSongs();
-	});
-$("#link").click(function(e){
-	e.preventDefault();
-	title = "Most popular Playlists";
-	getMostPopularSongs();
+	getFollowingPlaylists(url = getCookie("followingplaylists"));
 	});
 
 
@@ -58,8 +24,10 @@ function loadStings(url){
 	console.log(url);
 	var stings = getStings(url, function (stingCollection){
 	
-	console.log(stingCollection);
+	console.log(url);
 		$('#variable').text("");
+
+		$('#variable').append(' <div class ="col-md-6"></div>');
 		$('#variable').append('<h4><strong>Stings</strong></h4>');
 		$('#variable').append('<ul id = "timeline" class="timeline">');
 		$.each(stingCollection.stings, function(index,item){
@@ -69,66 +37,86 @@ function loadStings(url){
 			var link = $('<li><div class="timeline-panel"><div  class="timeline-heading"><a id="link" href ="#" ><h4 class="timeline-title" >' + sting.username + '</h4></a></div><div class="timeline-body"><p>' + sting.content + '</p></div></div>');
 			link.click(function(e){
 				e.preventDefault();
-				document.cookie="userprofile="+sting.getLink('user').href;
-				console.log(document.cookie);
-				window.location.replace("/profile.html");
+				loadProfile(sting.getLink('user').href);
+				$('#homepg').hide();
+				$('#profilepg').show();
 				
 				return false;
 			});
 			$('#timeline').append(link);
 		});
-		$('#variable').append('</ul>');
+		$('#variable').append('</ul></div>');
 		
 	});
 }
 
-/*
-function getMostPopularSongs(url){
-	var songs = getSongs(url, function (songCollection)){
-			$('#variable').append('<h4><strong>Most Popular Songs</strong></h4>');
-			$('#variable').append('<table id = "table" class="table table-striped">');
-			$('#table').append('<tbody>');
+
+function getFollowingSongs(url){
+
+	$('#variable').text("");
+	var songs = getSongs(url, function (songCollection){
+			$('#variable').append('<h4><strong>Songs</strong></h4>');
+			$('#variable').append('<table id = "songtable" class="table table-striped">');
+			$('#songtable').append('<tbody>');
 			$.each(songCollection.songs, function(index, item) {
 				var song = new Song(item);
 				var link = $('<tr><th><a href ="#">' + song.song_name +'</a></th>');
 				link.click(function(e){
 					e.preventDefault();
-					document.cookie="userprofile="+sting.getLink('user').href;
-					console.log(document.cookie);
+					console.log(song.getLink('self').href);
+					loadSongPage(song.getLink('self').href);
+					loadStingsSong(song.getLink('stings').href);
+					$('#homepg').hide();
+					$('#songpg').show();
+					
 					
 					return false;
 				});
-				$('#table').append(link);
+				$('#songtable').append(link);
 			});
-			$('#table').append('<tbody>');
+			$('#songtable').append('</tbody>');
 			$('#variable').append('</table>');
 });
 }
 
-function getMostPopularPlaylist(url){
-	var playlist = getPlaylists(url, function (playlistCollection)){
-			$('#variable').append('<h4><strong>Most Popular Playlists</strong></h4>');
-			$('#variable').append('<table id = "table" class="table table-striped">');
-			$('#table').append('<tbody>');
-			$.each(playlistCollection.playlists, function(index, item) {
-				var playlist = new Playlist(item);
-				var link = $('<tr><th><a href ="#">' + playlist.playlist_name +'</a></th>');
+function getFollowingPlaylists(url){
+
+	$('#variable').text("");
+	var playlist = getPlaylists(url, function (playlistCollection){
+			$('#variable').append('<h4><strong>Playlists</strong></h4>');
+			$('#variable').append('<table id = "playlisttalbe" class="table table-striped">');
+			$('#playlisttable').append('<tbody>');
+			$.each(playlistCollection.playlist, function(index, item) {
+				var playlistjs = new Playlist(item);
+				console.log(playlistjs);
+				var link = $('<tr><th><a href ="#">' + playlistjs.playlist_name +'</a></th>');
 				link.click(function(e){
 					e.preventDefault();
-					document.cookie="userprofile="+sting.getLink('user').href;
-					console.log(document.cookie);
-					
+					loadPlaylistPage(playlistjs.getLink('self').href);
+					$('#homepg').hide();
+					$('#playlistpg').show();
 					return false;
 				});
-				$('#table').append(link);
+				$('#playlisttalbe').append(link);
 			});
-			$('#table').append('<tbody>');
+			$('#playlisttable').append('</tbody>');
 			$('#variable').append('</table>');
 });
 }
-
-*/
-
+$('#poststinghome').click(function (e){
+	e.preventDefault();
+	var sting = new Object();
+	sting.username = username;
+	sting.content = $('#stinghometext').val();
+	console.log(songpgjs);
+	var link = getCookie("createsting");
+	createSting(link, "application/vnd.netsound.api.sting+json", JSON.stringify(sting), function(sting){
+		alert("Nice!");
+		loadStings(url = getCookie("followingstings"));
+		$('#createStingHomepg').modal('hide');
+	} );
+	
+	});
 
 
 function delete_cookie( name ) {

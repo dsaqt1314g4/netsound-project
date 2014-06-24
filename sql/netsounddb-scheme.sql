@@ -61,28 +61,28 @@ create table Stings_Song (
 	stingid int not null,
 	songid varchar(36) not null,
 	foreign key(stingid) references Stings(stingid) on delete cascade,
-	foreign key(songid) references Songs(songid)
+	foreign key(songid) references Songs(songid) on delete cascade
 );
 
 create table Stings_Playlist (
 	stingid int not null,
 	playlistid int not null,
 	foreign key(stingid) references Stings(stingid) on delete cascade,
-	foreign key(playlistid) references Playlists(playlistid)
+	foreign key(playlistid) references Playlists(playlistid) on delete cascade
 );
 
 create table Playlist_Relation(
 	songid varchar(36) not null,
 	playlistid int,
 	last_modified	timestamp,
-	foreign key(songid) references Songs(songid),
+	foreign key(songid) references Songs(songid) on delete cascade,
 	foreign key(playlistid) references Playlists(playlistid) on delete cascade
 );
 
 create table Follow(
 	followingname varchar(20),
 	followername varchar(20),
-	foreign key(followingname) references users(username),
-	foreign key(followername) references users(username),
+	foreign key(followingname) references users(username) on delete cascade,
+	foreign key(followername) references users(username) on delete cascade,
 	primary key (followingname, followername)
 );

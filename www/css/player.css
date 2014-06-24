@@ -1,0 +1,2 @@
+.navbar-xs { min-height:30px; border-radius:0} 
+.navbar-xs .navbar-nav > li > a { padding-top: 2px; padding-bottom: 2px; }

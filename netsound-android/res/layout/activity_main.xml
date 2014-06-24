@@ -3,29 +3,57 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.upc.eetac.dsa.dsaqt1314g4.netsound.MainActivity"
-    tools:ignore="MergeRootFrame">
+    android:gravity="center|center_vertical"
+    android:background="@drawable/fondo"
+    android:orientation="vertical" 
+    tools:context="edu.upc.eetac.dsa.dsaqt1314g4.netsound.MainActivity">
 
 
-<EditText android:id="@+id/username" 
-		android:layout_height="wrap_content"
+<EditText android:id="@+id/username"
+	    android:layout_marginTop="30dp"
+        android:textColor="@android:color/white"
 		android:layout_width="wrap_content"
-		android:hint="@string/username"
- 	/>
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:hint="@string/username"
+        android:textColorHint="#FFFFFF"
+        />
+
+<EditText
+        android:id="@+id/password"
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="1.5"
+        android:inputType="textPassword"
+        android:textColor="@android:color/white"
+        android:hint="@string/password"
+                                android:textColorHint="#FFFFFF"
+        />
+
     
-    <EditText android:id="@+id/password"
- 		android:inputType="textPassword"
-		android:layout_height="wrap_content"
-		android:layout_width="wrap_content"
-		android:hint="@string/password"
- 	/>
+
+    
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="login"
+        		    android:textColor="@android:color/white"
+        
+        android:text="@string/button_submit" />
+    
+    <Button
+        android:id="@+id/signup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="signup"
+        		    android:textColor="@android:color/black"
+        
+        android:text="@string/button_signup"
+        		    android:layout_marginTop="30dp"
+        
+         />
 
 
-<Button
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:onClick="login"
-    android:text="@string/button_submit" />
 
 </LinearLayout>
-

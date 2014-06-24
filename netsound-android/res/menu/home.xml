@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.netsound_android.HomeActivity" >
+
+    <item android:id="@+id/action_refresh"
+          android:icon="@drawable/ic_action_refresh"
+          android:title="@string/action_refresh"
+          android:showAsAction="ifRoom" />
+    
+    <item android:id="@+id/action_social"
+          android:icon="@drawable/ic_action_group"
+          android:title="@string/action_social"
+          android:showAsAction="ifRoom" />
+    
+       
+    <item
+        android:id="@+id/action_my_songs"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_my_songs"/>
+    
+    <item
+        android:id="@+id/action_my_playlists"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_my_playlists"/>
+    
+    <item
+        android:id="@+id/action_my_stings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_my_stings"/>
+    
+    <item
+        android:id="@+id/action_logout"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_logout"/>
+
+</menu>

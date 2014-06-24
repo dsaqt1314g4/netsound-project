@@ -3,8 +3,25 @@ import java.util.List;
 
 import javax.ws.rs.core.Link;
 
+import org.glassfish.jersey.linking.Binding;
+import org.glassfish.jersey.linking.InjectLink;
+import org.glassfish.jersey.linking.InjectLinks;
+import org.glassfish.jersey.linking.InjectLink.Style;
+
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.MediaType;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.PlaylistResource;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.SongResource;
+
 
 public class Playlist {
+	@InjectLinks({
+		@InjectLink(resource = PlaylistResource.class, style = Style.ABSOLUTE, rel = "self", title = "Playlistpage", type = MediaType.NETSOUND_API_PLAYLIST, method = "getPlaylist", bindings = @Binding(name = "playlistid", value = "${instance.playlistid}")),
+		@InjectLink(resource = PlaylistResource.class, style = Style.ABSOLUTE, rel = "stings", title = "PlaylistStings", type = MediaType.NETSOUND_API_STING, method = "getPlaylistStings", bindings = @Binding(name = "playlistid", value = "${instance.playlistid}")),
+		@InjectLink(resource = PlaylistResource.class, style = Style.ABSOLUTE, rel = "songs", title = "PlaylistSongs", type = MediaType.NETSOUND_API_SONG_COLLECTION, method = "getSongsFromPlaylist", bindings = @Binding(name = "playlistid", value = "${instance.playlistid}")),
+		@InjectLink(resource = PlaylistResource.class, style = Style.ABSOLUTE, rel = "upload-song", title = "Playlist Upload Song", type = MediaType.NETSOUND_API_SONG, method = "uploadSongInToPlaylist", bindings = @Binding(name = "playlistid", value = "${instance.playlistid}")),
+		@InjectLink(resource = PlaylistResource.class, style = Style.ABSOLUTE, rel = "delete-playlist", title = "Delete Playlist", type = MediaType.NETSOUND_API_PLAYLIST, method = "deletePlaylist", bindings = @Binding(name = "playlistid", value = "${instance.playlistid}")),
+			
+	})
 	
 	private List<Link> links;
 	private String playlistid;

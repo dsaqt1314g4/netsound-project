@@ -16,6 +16,7 @@ public class User implements Serializable{
 	private String token;
 	private String email;
 	private long date_create;
+	private boolean myFollower = false;
 	
 		
 	public User(String username, String name, String description,
@@ -64,5 +65,12 @@ public class User implements Serializable{
 	public void setDate_create(long date_create) {
 		this.date_create = date_create;
 	}
+	public boolean isMyFollower() {
+		return myFollower;
+	}
+	public void setMyFollower(boolean myFollower) {
+		this.myFollower = myFollower;
+	}
+	
 	
 }

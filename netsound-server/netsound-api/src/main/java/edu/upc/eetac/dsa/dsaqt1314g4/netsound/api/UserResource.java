@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
@@ -17,6 +18,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
@@ -25,7 +27,6 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Song;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.Sting;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.StingCollection;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.api.model.User;
@@ -38,6 +39,53 @@ public class UserResource {
 	
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 
+	// Get de Users con Querys
+		@GET
+		@Produces(MediaType.NETSOUND_API_USER_COLLECTION)
+		public UserCollection getSongs(@QueryParam("length") int length,
+				@QueryParam("before") long before, @QueryParam("after") long after,
+				@QueryParam("name") String name, @QueryParam("style") String style) {
+			UserCollection users = new UserCollection();
+
+			Connection conn = null;
+			try {
+				conn = ds.getConnection();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			PreparedStatement stmt = null;
+			try {
+				stmt = conn.prepareStatement(buildGetUserQuery());
+				stmt.setString(1, "%" + name + "%");
+				ResultSet rs = stmt.executeQuery();
+				while (rs.next()) {
+					User user = new User();
+					user.setUsername(rs.getString("username"));
+					user.setName(rs.getString("name"));
+					user.setDescription(rs.getString("description"));
+					users.addUser(user);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if (stmt != null)
+						stmt.close();
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+			System.out.println(users);
+			return users;
+		}
+
+		private String buildGetUserQuery() {
+				return "select * from users where username like ? ";
+
+		}
+	
+	
 	
 	@Path("/{username}")
 	@GET
@@ -279,7 +327,7 @@ public class UserResource {
 
 		return "insert into users (username, userpass, name, description, email) values (?, MD5(?), ?, ?, ?);";
 	}
-	
+		
 	@DELETE
 	@Path("/{username}")
 	public void deleteUser(@PathParam("username") String username) {
@@ -316,7 +364,7 @@ public class UserResource {
 	}
 	
 	private String buildDeleteUser() {
-		return "delete from Users where username=?";
+		return "delete from users where username=?";
 	}
 	
 	private void validateUserDelete(String username) {
@@ -325,6 +373,86 @@ public class UserResource {
 				.equals(currentUser.getUsername()))
 			throw new ForbiddenException(
 					"You are not allowed to modify this sting.");
+	}
+	
+	@Path("/{username}/following")
+	@POST
+	@Consumes(MediaType.NETSOUND_API_USER)
+	public User createFollower(@PathParam("username") String username, User user) {
+		
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(buildCreateFollower());
+			stmt.setString(1, user.getUsername());
+			stmt.setString(2, username);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return user;
+
+	}
+	
+	private String buildCreateFollower() {
+
+		return "insert into Follow (followingname, followername) values (?, ?);";
+	}
+		
+	
+	@Path("/{username}/following/{following}")
+	@DELETE
+	public void deleteFollowing(@PathParam("username") String username, @PathParam("following") String following) {
+		validateUserDelete(username);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+	
+		PreparedStatement stmt = null;
+		try {
+			String sql = buildDeleteFollow();
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1, username);
+			stmt.setString(2, following);
+			int rows = stmt.executeUpdate();
+			if (rows == 0)
+				throw new NotFoundException("There's no User with username="
+						+ username + " or " + following);
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+	
+	private String buildDeleteFollow() {
+		return "delete from Follow where followername = ? and followingname = ?";
 	}
 	
 	//STINGS de USER
@@ -427,14 +555,14 @@ public class UserResource {
 
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(buildInsertSting(), Statement.RETURN_GENERATED_KEYS);
+			String sql = buildInsertSting();
+			stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			stmt.setString(1, security.getUserPrincipal().getName());
 			stmt.setString(2, sting.getContent());
 			stmt.executeUpdate();
 			ResultSet rs = stmt.getGeneratedKeys();
 			if (rs.next()) {
 				int stingid = rs.getInt(1);
-
 				sting = getStingFromDatabaseByStingid(Integer.toString(stingid));
 			} else {
 				// Something has failed...

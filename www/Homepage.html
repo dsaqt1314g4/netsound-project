@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home</title>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet"
+	href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="./css/bar.css">
+<link rel="stylesheet" href="./css/timeline.css">
+<link rel="stylesheet" href="./css/home.css">
+<link rel="stylesheet" href="./css/sidebar.css">
+<link rel="stylesheet" href="./css/profile.css">
+<link rel="stylesheet" href="./css/buttoncircle.css">
+
+</head>
+
+<body>
+	<nav id="navbarid"
+		class="navbar navbar-default navbar-fixed-top navbar-inverse"
+		role="navigation">
+
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse"
+				data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Barra de busqueda</span>
+			</button>
+			<a id="home" href="#" class="navbar-brand">Home</a>
+		</div>
+		<div class="collapse navbar-collapse"
+			id="bs-example-navbar-collapse-1">
+			<div class="col-sm-2 col-md-4">
+				<div class="navbar-form" role="search">
+					<div class="input-group">
+						<div class="input-group-btn search-panel">
+							<button type="button" class="btn btn-default dropdown-toggle"
+								data-toggle="dropdown">
+								<span id="search_concept">Filter</span> <span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu" role="menu">
+								<li><a id="user" href="#User">User</a></li>
+								<li><a id="song" href="#Song">Song</a></li>
+								<li><a id="playlist" href="#Playlist">Playlist</a></li>
+							</ul>
+						</div>
+						<input type="hidden" value="all" id="search_param"> <input
+							id="search" type="text" class="form-control"
+							placeholder="Search term..."> <span
+							class="input-group-btn">
+							<button id="button_search" class="btn btn-default" type="button">
+								<span class="glyphicon glyphicon-search"></span>
+							</button>
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<ul class="nav navbar-nav navbar-right">
+
+				<li><a id="profile" href="#"><i
+						class="glyphicon glyphicon-user"></i></a></li>
+			</ul>
+
+		</div>
+	</nav>
+
+	<nav
+		class="navbar navbar-default navbar-fixed-bottom navbar-inverse navbar-xs"
+		role="navigation">
+
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse"
+				data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span> <span
+					class="icon-bar"></span>
+			</button>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse"
+			id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li><a id="previous" href="#"><i
+						class="glyphicon glyphicon-backward"></i></a></li>
+				<li><a id="pause" href="#"><i
+						class="glyphicon glyphicon-pause"></i></a></li>
+				<li><a id="play" href="#"><i
+						class="glyphicon glyphicon-play"></i></a></li>
+				<li><a id="next" href="#"><i
+						class="glyphicon glyphicon-forward"></i></a></li>
+				<li><a id="songname" href="#"></a></li>
+			</ul>
+		</div>
+		<!-- /.navbar-collapse -->
+		<audio id="song">
+			<source src="./song/482a0a57-3815-4058-9a94-fc7fd3eb0e6c.mp3"
+				type="audio/mp3" id="audio">
+		</audio>
+
+		<script
+			src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<!-- Latest compiled and minified JavaScript -->
+		<script
+			src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+	</nav>
+
+
+	<!--HOME PAGE -->
+
+	<div id="homepg" class="container">
+		<div class="row well">
+			<div class="container">
+				<div class="col-md-10">
+					<div class="row"></div>
+					<div class="col-sm-1 col-md-3 affix-sidebar">
+						<div class="sidebar-nav">
+							<div class="navbar navbar-default" role="navigation">
+								<div class="navbar-header">
+									<button type="button" class="navbar-toggle"
+										data-toggle="collapse" data-target=".sidebar-navbar-collapse">
+										<span class="sr-only">Toggle navigation</span>
+									</button>
+									<span class="visible-xs navbar-brand">Sidebar menu</span>
+								</div>
+								<div class="navbar-collapse collapse sidebar-navbar-collapse">
+									<ul class="nav navbar-nav" id="sidenav01">
+										<li><a id="stingshomepg" href="#" data-toggle="collapse"
+											data-parent="#sidenav01" class="collapsed"> <span
+												class="glyphicon glyphicon-send"></span> Stings
+										</a> <a id="songshomepg" href="#" data-toggle="collapse"
+											data-target="#toggleDemo" data-parent="#sidenav01"
+											class="collapsed"> <span
+												class="glyphicon glyphicon-music"></span> Songs
+										</a>
+										<li><a id="playlistshomepg" href="#"
+											data-toggle="collapse" data-target="#toggleDemo2"
+											data-parent="#sidenav01" class="collapsed"> <span
+												class="glyphicon glyphicon-headphones"></span> Playlist
+										</a></li>
+										<li><a id="createStinghomepg" href="#createStingHomepg"
+											data-toggle="modal" data-parent="#sidenav01"
+											class="collapsed"><span class="glyphicon glyphicon-send"></span>
+												Create Sting</a></li>
+									</ul>
+								</div>
+								<!--/.nav-collapse -->
+							</div>
+						</div>
+						<!-- Modal -->
+						<div class="modal fade" id="createStingHomepg" tabindex="-1"
+							role="dialog" aria-labelledby="createStingHomepg"
+							aria-hidden="true">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header modal-header-success">
+										<button type="button" class="close" data-dismiss="modal"
+											aria-hidden="true">&times;</button>
+										<h4 class="modal-title">Sting!</h4>
+									</div>
+									<div class="modal-body">
+										<div class="container">
+
+											<div class="col-md-10">
+												<span><textarea id="stinghometext" rows="4" cols="50"
+														placeholder="Enter Sting"></textarea> </span>
+											</div>
+										</div>
+										<!-- /.modal-content -->
+									</div>
+									<div class="panel-footer" style="margin-bottom: -14px;">
+										<button id="poststinghome" type="button"
+											class="btn btn-success">Sting!</button>
+									</div>
+									<!-- /.modal-dialog -->
+								</div>
+							</div>
+						</div>
+
+					</div>
+					<div class="container">
+						<div class="col-md-6">
+							<div id="variable" class="panel-body"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src="./js/homepage.js"></script>
+	</div>
+
+	<!--SEARCH PAGE -->
+
+	<div id="searchpg" class="container">
+		<div class="row well">
+			<div class="container">
+				<div class="col-md-10">
+					<div class="container">
+						<div class="row">
+							<div class="col-md-4">
+								<h3 id="panelsearchtitle"></h3>
+								<table class="table table-striped">
+									<tbody id="searchtable">
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<!--SONG PAGE -->
+
+	<div id="songpg" class="container">
+		<div class="row well">
+			<div class="container">
+				<div class="col-md-10">
+					<div class="container">
+						<div class="row">
+							<div class="col-md-4">
+								<div id="songpgpaneldescription" class="panel-body"></div>
+								<button id="songpgplay" type="button"
+									class="btn btn-success btn-circle btn-lg">
+									<i class="glyphicon glyphicon-play"></i>
+								</button>
+								<button id="playlistdropdown" type="button"
+									class="btn btn-default btn-circle btn-lg  dropdown-toggle"
+									data-toggle="dropdown">
+									<i class="glyphicon glyphicon-plus"></i>
+								</button>
+								<ul id="playlistaddsongpg" class="dropdown-menu" role="menu">
+								</ul>
+								<button class="btn btn-success btn-circle btn-lg"
+									href="#poststingsongmodalsong" data-toggle="modal">
+									<i class="glyphicon glyphicon-send"></i>
+								</button>
+								<button id="songremove" type="button"
+									class="btn btn-danger btn-circle btn-lg">
+									<i class="glyphicon glyphicon-remove"></i>
+								</button>
+								<!-- Modal -->
+								<div class="modal fade" id="poststingsongmodalsong"
+									tabindex="-1" role="dialog"
+									aria-labelledby="poststingsongmodalsong" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header modal-header-success">
+												<button type="button" class="close" data-dismiss="modal"
+													aria-hidden="true">&times;</button>
+												<h4 class="modal-title">Sting!</h4>
+											</div>
+											<div class="modal-body">
+												<div class="container">
+
+													<div class="col-md-10">
+														<span><textarea id="stingsongtext" rows="4"
+																cols="50" placeholder="Enter Sting"></textarea> </span>
+													</div>
+												</div>
+												<!-- /.modal-content -->
+											</div>
+											<div class="panel-footer" style="margin-bottom: -14px;">
+												<button id="postssongstingsong" type="button"
+													class="btn btn-success">Sting!</button>
+											</div>
+											<!-- /.modal-dialog -->
+										</div>
+									</div>
+								</div>
+							</div>
+							<div id="songpgpanelstings" class="panel-body"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!--PLAYLIST PAGE -->
+
+	<div id="playlistpg" class="container">
+		<div class="row well">
+			<div class="container">
+				<div class="col-md-10">
+					<div class="container">
+						<div class="row">
+							<div class="col-md-4">
+								<div id="playlistpgpaneldescription" class="panel-body"></div>
+								<button id="playlistpgplay" type="button"
+									class="btn btn-success btn-circle btn-lg">
+									<i class="glyphicon glyphicon-play"></i>
+								</button>
+								<button class="btn btn-success btn-circle btn-lg"
+									href="#poststingsongmodalplaylist" data-toggle="modal">
+									<i class="glyphicon glyphicon-send"></i>
+								</button>
+								<button id="playlistremove" type="button"
+									class="btn btn-danger btn-circle btn-lg">
+									<i class="glyphicon glyphicon-remove"></i>
+								</button>
+								<!-- Modal -->
+								<div class="modal fade" id="poststingsongmodalplaylist"
+									tabindex="-1" role="dialog"
+									aria-labelledby="poststingsongmodaplaylistl" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header modal-header-success">
+												<button type="button" class="close" data-dismiss="modal"
+													aria-hidden="true">&times;</button>
+												<h4 class="modal-title">Sting!</h4>
+											</div>
+											<div class="modal-body">
+												<div class="container">
+
+													<div class="col-md-10">
+														<span><textarea id="stingplaylisttext" rows="4"
+																cols="50" placeholder="Enter Sting"></textarea> </span>
+													</div>
+												</div>
+												<!-- /.modal-content -->
+											</div>
+											<div class="panel-footer" style="margin-bottom: -14px;">
+												<button id="poststingplaylist" type="button"
+													class="btn btn-success">Sting!</button>
+											</div>
+											<!-- /.modal-dialog -->
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<h4>Songs</h4>
+								<table class="table table-striped">
+									<tbody id="songsplaylisttable">
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="row">
+							<div id="playlistpgpanelstings" class="panel-body"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<!--PROFILE PAGE -->
+
+	<div id="profilepg" class="container">
+		<div class="row well">
+			<div class="row">
+				<div class="col-md-2">
+					<img class="pic img-circle"
+						src="http://lh5.googleusercontent.com/-b0-k99FZlyE/AAAAAAAAAAI/AAAAAAAAAAA/twDq00QDud4/s120-c/photo.jpg"
+						alt="...">
+				</div>
+				<br> <br> <br>
+				<div class="col-md-4">
+					<h2 id="name"></h2>
+					<button id="follow" type="button" class="btn btn-success">Follow
+					</button>
+				</div>
+			</div>
+			<br> <br>
+			<p>
+			<ul class="nav nav-tabs" id="myTab">
+				<li><a id="stingstab" href="#" data-toggle="collapse">Stings</a></li>
+				<li><a id="songstab" href="#" data-toggle="collapse"> Songs</a></li>
+				<li><a id="playliststab" href="#" data-toggle="collapse">
+						Playlists</a></li>
+				<li><a id="followingtab" href="#" data-toggle="collapse">
+						Following</a></li>
+				<li><a id="followertab" href="#" data-toggle="collapse">Follower</a></li>
+			</ul>
+			<div class="container">
+				<div class="col-md-10">
+					<div id="stingspanel" class="panel-body"></div>
+
+
+					<div class="row">
+						<div id="playlistspanel" class="panel-body">
+							<div class="col-md-4">
+								<div id="profileplaylistmodal" class="panel-body">
+									<button class="btn btn-success" href="#playlistmodal"
+										data-toggle="modal">
+										<h4>Create Playlist</h4>
+									</button>
+								</div>
+								<!-- Modal -->
+								<div class="modal fade" id="playlistmodal" tabindex="-1"
+									role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header modal-header-success">
+												<button type="button" class="close" data-dismiss="modal"
+													aria-hidden="true">&times;</button>
+												<h4 class="modal-title">Create Playlist</h4>
+											</div>
+											<div class="modal-body">
+												<div class="container">
+
+													<div class="col-md-4">
+														<div class="form-group">
+															<span> <label for="inputTitle">Playlist
+																	name</label> <input name="playlist" type="text"
+																id="inputPlaylist" class="form-control"
+																placeholder="Enter Playlist Name" required="required"></span><span><label
+																for="inputTitle">Description</label> <textarea
+																	name="description" type="text" id="descriptionplaylist"
+																	class="form-control" placeholder="Enter Description"
+																	required="required"></textarea></span>
+															<h5>
+																<b>Style</b>
+															</h5>
+
+															<div class="col-md-4">
+																<div class="radio">
+																	<label> <input type="radio" name="style"
+																		id="rock" value="rock"> Rock
+																	</label>
+																</div>
+
+																<div class="radio">
+																	<label> <input type="radio" name="style"
+																		id="pop" value="pop"> Pop
+																	</label>
+																</div>
+
+															</div>
+															<div class="col-md-4">
+																<div class="radio">
+																	<label> <input type="radio" name="style"
+																		id="blues" value="blues"> Blues
+																	</label>
+																</div>
+																<div class="radio">
+																	<label> <input type="radio" name="style"
+																		id="jazz" value="jazz"> Jazz
+																	</label>
+																</div>
+															</div>
+															<div class="col-md-4">
+																<div class="radio">
+																	<label> <input type="radio" name="style"
+																		id="others" value="others"> Others
+																	</label>
+																</div>
+																<div class="radio">
+																	<label> <input type="radio" name="style"
+																		id="hiphop" value="hiphop"> HipHop
+																	</label>
+																</div>
+															</div>
+
+														</div>
+														<button id="createPlaylist" type="submit"
+															class="btn btn-success">Create Playlist</button>
+													</div>
+												</div>
+
+											</div>
+										</div>
+										<!-- /.modal-content -->
+									</div>
+								</div>
+							</div>
+							<div class="col-md-8">
+								<table class="table table-striped">
+									<tbody id="playlistsprofiletable">
+
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="row">
+						<div id="songspanel" class="panel-body">
+							<div class="col-md-4">
+								<div id="modalbutton" class="panel-body">
+									<a class="btn btn-success" href="#success" data-toggle="modal"><h4>Upload
+											Song</h4></a>
+								</div>
+								<!-- Modal -->
+								<div class="modal fade" id="success" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header modal-header-success">
+												<button type="button" class="close" data-dismiss="modal"
+													aria-hidden="true">&times;</button>
+												<h4 class="modal-title">Upload Song</h4>
+											</div>
+											<div class="modal-body">
+												<div class="container">
+													<form id="songForm" class="form-horizontal" role="form">
+														<div class="col-md-4">
+															<div class="form-group">
+																<span> <label for="inputTitle">Song name</label>
+																	<input name="song" type="text" id="inputSong"
+																	class="form-control" placeholder="Enter song title"
+																	required="required"></span><span> <label
+																	for="inputTitle">Album</label> <input name="album"
+																	type="text" id="album" class="form-control"
+																	placeholder="Enter Album" required="required">
+																</span><span><label for="inputTitle">Description</label>
+																	<textarea name="description" type="text"
+																		id="description" class="form-control"
+																		placeholder="Enter Description" required="required"></textarea></span>
+																<h5>
+																	<b>Style</b>
+																</h5>
+
+																<div class="col-md-4">
+																	<div class="radio">
+																		<label> <input type="radio" name="style"
+																			id="rock" value="rock" checked> Rock
+																		</label>
+																	</div>
+
+																	<div class="radio">
+																		<label> <input type="radio" name="style"
+																			id="pop" value="pop"> Pop
+																		</label>
+																	</div>
+
+																</div>
+																<div class="col-md-4">
+																	<div class="radio">
+																		<label> <input type="radio" name="style"
+																			id="blues" value="blues"> Blues
+																		</label>
+																	</div>
+																	<div class="radio">
+																		<label> <input type="radio" name="style"
+																			id="jazz" value="jazz"> Jazz
+																		</label>
+																	</div>
+																</div>
+																<div class="col-md-4">
+																	<div class="radio">
+																		<label> <input type="radio" name="style"
+																			id="others" value="others"> Others
+																		</label>
+																	</div>
+																	<div class="radio">
+																		<label> <input type="radio" name="style"
+																			id="jazz" value="jazz"> HipHop
+																		</label>
+																	</div>
+																</div>
+
+															</div>
+															<div class="form-group">
+																<label for="inputFile">Song</label> <input
+																	name="songfile" type="file" id="inputFile"
+																	required="required">
+															</div>
+															<progress style="display: none;"></progress>
+															<button id="uploadButton" type="submit"
+																class="btn btn-default">Upload</button>
+														</div>
+													</form>
+												</div>
+
+											</div>
+										</div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>
+							</div>
+							<div class="col-md-6">
+								<table class="table table-striped">
+									<tbody id="songsprofiletable">
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div id="followpanel">
+							<div class="row">
+								<br>
+							</div>
+							<div class="row">
+								<div class="col-md-4"></div>
+								<div class="col-md-6">
+									<table class="table table-striped">
+										<tbody id="followprofiletable">
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script type="text/javascript" src="./js/jquery.base64.js"></script>
+	<script type="text/javascript" src="./js/linkheaders.js"></script>
+	<script type="text/javascript" src="./js/uritemplate.js"></script>
+	<script type="text/javascript" src="./js/api.js"></script>
+	<script type="text/javascript" src="./js/search.js"></script>
+	<script type="text/javascript" src="./js/player.js"></script>
+	<script type="text/javascript" src="./js/home.js"></script>
+	<script type="text/javascript" src="./js/profile.js"></script>
+	<script type="text/javascript" src="./js/playlist.js"></script>
+	<script type="text/javascript" src="./js/song.js"></script>
+</body>
+</html>

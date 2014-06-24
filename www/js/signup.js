@@ -1,4 +1,4 @@
-var API_URL = "http://localhost:8080/netsound-api";
+var API_URL = "http://147.83.7.158:8080/netsound-api";
 
 $(document).ready(function(){
 	loadRootAPI(function(rootAPI){
@@ -12,7 +12,7 @@ $("#signin").click(function(e){
 	var user = new Object();
 	user.name = $("#name").val();
 	user.username = $("#username").val();
-	user.userpass = $("#password").val();
+	user.userpass = $("#password").val(); 
 	user.email = $("#email").val();
 	user.description = $("#description").val();
 	var createUserLink = rootAPI.getLink('create-user');
@@ -21,7 +21,7 @@ $("#signin").click(function(e){
 		$('<div class="alert alert-success"> <strong>Well done!</strong></div>').appendTo($("#result"));
 		$('<button id="login" class="btn btn-lg btn-primary btn-block login-btn" type="submit">Login</button>').appendTo($("#result"));
 		$("#login").click(function(e){
-			window.location.replace("/login.html");
+			window.location.replace("/index.html");
 			});	
   	});
 	

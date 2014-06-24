@@ -1,0 +1,39 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:background="@drawable/fondo"
+    android:layout_height="match_parent"
+    tools:context="edu.upc.eetac.dsa.dsaqt1314g4.netsound.SocialActivity"
+    tools:ignore="MergeRootFrame">
+    
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/myFollowers" 
+        android:text="@string/myFollowers"
+         />    
+    
+     <TableLayout 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/followers"
+        android:layout_marginTop="30dp"/>
+        
+     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:id="@+id/myFollowings"
+        android:text="@string/myFollowings" 
+         />    
+    
+     <TableLayout 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/followings"
+        android:layout_marginTop="130dp"/>
+        
+         
+    
+</FrameLayout>

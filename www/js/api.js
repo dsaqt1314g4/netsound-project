@@ -1,4 +1,11 @@
-var NETSOUND_API_HOME="http://localhost:8080/netsound-api/";
+var NETSOUND_API_HOME="http://147.83.7.158:8080/netsound-api/";
+var username = getCookie("username");
+var userpass = getCookie("userpass");
+$.ajaxSetup({
+	headers : {
+		'Authorization' : "Basic " + $.base64.btoa(username + ':' + userpass)
+	}
+});
 
 function Link(rel, linkheader){
 	this.rel = rel;
@@ -37,16 +44,15 @@ function User(user){
 function UserCollection(userCollection){
 	this.users = userCollection.users;
 
-	this.links = buildLinks(stingCollection.links);
+	/*this.links = buildLinks(userCollection.links);
 	var instance = this;
 	this.getLink = function(rel){
 		return this.links[rel];
-	}
+	}*/
 }
 
 function Sting(sting){
 	this.username = sting.username;
-	this.userid = sting.userid;
 	this.lastModified = sting.lastModified;
 	this.content = sting.content;
 	this.links = buildLinks(sting.links);
@@ -70,7 +76,7 @@ function StingCollection(stingCollection){
 
 function Song(song){
 	this.songid = song.songid;
-	this.userid = song.userid;
+	this.username = song.username;
 	this.song_name = song.song_name;
 	this.album = song.album;
 	this.description = song.description;
@@ -78,16 +84,16 @@ function Song(song){
 	this.date = song.date;
 	this.songURL = song.songURL;
 	this.score = song.score;
-	/*this.links = buildLinks(sting.links);
+	this.links = buildLinks(song.links);
 	var instance = this;
 	this.getLink = function(rel){
 		return this.links[rel];
-	}*/
+	}
 }
 
 function SongCollection(songCollection){
-	this.oldestTimestamp = stingCollection.oldestTimestamp;
-	this.newestTimestamp = stingCollection.newestTimestamp;
+	this.oldestTimestamp = songCollection.oldestTimestamp;
+	this.newestTimestamp = songCollection.newestTimestamp;
 	this.songs = songCollection.songs;
 //	console.log(this.stings);
 	/*this.links = buildLinks(stingCollection.links);  Cuando esten los injectilnk descomentar
@@ -99,24 +105,24 @@ function SongCollection(songCollection){
 
 function Playlist(playlist){
 	this.playlistid = playlist.playlistid;
-	this.userid = playlist.userid;
+	this.username = playlist.username;
 	this.playlist_name = playlist.playlist_name;
 	this.description = playlist.description;
 	this.style = playlist.style;
 	this.date = playlist.date;
 	this.playlistURL = playlist.playlistURL;
 	this.score = playlist.score;
-	/*this.links = buildLinks(sting.links);
+	this.links = buildLinks(playlist.links);
 	var instance = this;
 	this.getLink = function(rel){
 		return this.links[rel];
-	}*/
+	}
 }
 
 function PlaylistCollection(playlistCollection){
-	this.oldestTimestamp = stingCollection.oldestTimestamp;
-	this.newestTimestamp = stingCollection.newestTimestamp;
-	this.playlists = playlistCollection.playlists;
+	this.oldestTimestamp = playlistCollection.oldestTimestamp;
+	this.newestTimestamp = playlistCollection.newestTimestamp;
+	this.playlist = playlistCollection.playlist;
 //	console.log(this.stings);
 	/*this.links = buildLinks(stingCollection.links);  Cuando esten los injectilnk descomentar
 	var instance = this;
@@ -154,6 +160,7 @@ function loadRootAPI(success){
 }
 
 function getStings(url, success){
+	
 	$.ajax({
 		url : url,
 		type : 'GET',
@@ -306,13 +313,16 @@ function getSong(url, success){
 	});
 }
 
-function createSong(url, type, song, success){
+function createSong(url, type, formData, success){
+	console.log(url, type, song, success);
 	$.ajax({
-		url : url,
-		type : 'POST',
+		url: url,
+		type: 'POST',
 		crossDomain : true,
-		contentType: type, 
-		data: song
+		data: formData,
+		cache: false,
+		contentType: type,
+        processData: false
 	})
 	.done(function (data, status, jqxhr) {
 		var song = $.parseJSON(jqxhr.responseText);
@@ -325,6 +335,96 @@ function createSong(url, type, song, success){
 
 
 function deleteSong(url, success){
+	$.ajax({
+		url : url,
+		type : 'DELETE',
+		crossDomain : true
+	})
+	.done(function (data, status, jqxhr) {
+		success();
+	})
+    .fail(function (jqXHR, textStatus) {
+		console.log(textStatus);
+	});
+}
+
+
+
+function getPlaylists(url, success){
+	$.ajax({
+		url : url,
+		type : 'GET',
+		crossDomain : true,
+		dataType: 'json'
+	})
+	.done(function (data, status, jqxhr) {
+		var response = $.parseJSON(jqxhr.responseText);
+		var playlistCollection = new PlaylistCollection(response);
+		
+		success(playlistCollection);
+	})
+    .fail(function (jqXHR, textStatus) {
+		console.log(textStatus);
+	});
+}
+
+function getPlaylist(url, success){
+	$.ajax({
+		url : url,
+		type : 'GET',
+		crossDomain : true,
+		dataType: 'json'
+	})
+	.done(function (data, status, jqxhr) {
+		var playlist = $.parseJSON(jqxhr.responseText);
+		success(playlist);
+	})
+    .fail(function (jqXHR, textStatus) {
+		console.log(textStatus);
+	});
+}
+
+function createPlaylist(url, type, playlist, success){
+	console.log(url, type, song, success);
+	$.ajax({
+		url: url,
+		type: 'POST',
+		crossDomain : true,
+		data: playlist,
+		cache: false,
+		contentType: type,
+        processData: false
+	})
+	.done(function (data, status, jqxhr) {
+		var playlist = $.parseJSON(jqxhr.responseText);
+		success(playlist);
+	})
+    .fail(function (jqXHR, textStatus) {
+		console.log(textStatus);
+	});
+}
+function createPlaylistSong(url, type, song, success){
+console.log(song);
+	$.ajax({
+		url: url,
+		type: 'POST',
+		crossDomain : true,
+		data: song,
+		cache: false,
+		contentType: type,
+        processData: false
+	})
+	.done(function (data, status, jqxhr) {
+		var playlist = $.parseJSON(jqxhr.responseText);
+		success(playlist);
+	})
+    .fail(function (jqXHR, textStatus) {
+		console.log(textStatus);
+	});
+}
+
+
+function deletePlaylist(url, success){
 	$.ajax({
 		url : url,
 		type : 'DELETE',

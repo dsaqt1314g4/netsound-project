@@ -1,29 +1,12 @@
-/* make sidebar nav vertical */ 
-@media (min-width: 768px){
-  .affix-content .container {
-    width: 700px;
-  }   
 
-  html,body{
-    background-color: #f8f8f8;
-    height: 100%;
-    overflow: hidden;
-  }
-    .affix-content .container .page-header{
-    margin-top: 0;
-  }
+  
 
   .affix-sidebar{
     padding-right:0; 
     font-size:small;
     padding-left: 0;
   }  
-  .affix-row, .affix-container, .affix-content{
-    height: 100%;
-    overflow: scroll;
-    margin-left: 0;
-    margin-right: 0;    
-  } 
+  
   .affix-content{
     background-color:white; 
   } 
@@ -50,40 +33,6 @@
   }  
 }
 
-@media (min-width: 769px){
-  .affix-content .container {
-    width: 600px;
-  }
-    .affix-content .container .page-header{
-    margin-top: 0;
-  }  
-}
-
-@media (min-width: 992px){
-  .affix-content .container {
-  width: 900px;
-  }
-    .affix-content .container .page-header{
-    margin-top: 0;
-  }
-}
-
-@media (min-width: 1220px){
-  .affix-row{
-    overflow: hidden;
-  }
-
-  .affix-content{
-    overflow: auto;
-  }
-
-  .affix-content .container {
-    width: 1000px;
-  }
-
-  .affix-content .container .page-header{
-    margin-top: 0;
-  }
   .affix-content{
     padding-right: 30px;
     padding-left: 30px;
@@ -99,7 +48,7 @@
     padding: 0;
   }
   .sidebar-nav .navbar li a:hover {
-    background-color: #428bca;
+    background-color: #3f903f;
     color: white;
   }
   .sidebar-nav .navbar li a > .caret {

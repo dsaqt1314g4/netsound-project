@@ -7,6 +7,26 @@
     <string name="app_name">netsound-android</string>
     <string name="button_submit">Login</string>
     <string name="title_activity_home">HomeActivity</string>
+    <string name="button_signup">Sign up</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_logout">Logout</string>
+    <string name="action_my_stings">My stings</string>
+    <string name="action_my_playlists">My playlists</string>
+    <string name="action_my_songs">My songs</string>
+    <string name="action_my_profile">My profile</string>
+    <string name="title_activity_my_stings">MyStingsActivity</string>
     <string name="hello_world">Hello world!</string>
-
+    <string name="title_activity_my_songs">MySongsActivity</string>
+    <string name="title_activity_my_playlist">MyPlaylistActivity</string>
+    <string name="title_activity_publish_sting">PublishStingActivity</string>
+    <string name="comment">Write your sting here..</string>
+    <string name="publish">Publish</string>
+    <string name="action_publish">Publish sting</string>
+    <string name="choose">Choose</string>
+    <string name="title_activity_social">SocialActivity</string>
+    <string name="myFollowers">My Followers</string>
+    <string name="myFollowings">My Followings</string>
+    <string name="action_social">Social</string> 
+ 
 </resources>

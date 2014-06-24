@@ -3,9 +3,7 @@ package edu.upc.eetac.dsa.dsaqt1314g4.netsound;
 import java.util.List;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Base64;
@@ -15,19 +13,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-
-import com.example.netsound_android.R;
-
-import edu.upc.eetac.dsa.dsaqt1314g4.netsound.model.Sting;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.model.User;
+import edu.upc.eetac.dsa.dsaqt1314g4.netsound.utils.Utils;
 
 public class MainActivity extends Activity implements AsyncResponse{
 
-	public static final String BASE_URL = "http://192.168.1.108:8000/netsound-api/";
+	public static final String BASE_URL = "http://147.83.7.158:8080/netsound-api/";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setTitle("Netsound");
 		
 		setContentView(R.layout.activity_main);
 
@@ -35,14 +31,19 @@ public class MainActivity extends Activity implements AsyncResponse{
 			getFragmentManager().beginTransaction()
 					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		
+			
+
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+		//getMenuInflater().inflate(R.menu.main, menu);
+		
+		 
+        return true;
 	}
 
 	@Override
@@ -94,37 +95,37 @@ public class MainActivity extends Activity implements AsyncResponse{
 	 public void goToHome(User user){
 		 
 		Intent i = new Intent(getApplicationContext(), HomeActivity.class);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); 
 		i.putExtra("user", user);
 		startActivity(i);
 	 }
 	 
-	 @SuppressWarnings("deprecation")
 	public void printError(String error){
-		 AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-					
-	 
-				// set title
-		 alertDialog.setTitle("Try again");
-	 
-				// set dialog message
-		 alertDialog.setMessage("Your username or password is wrong");
-		 
-		 alertDialog.setButton("OK",new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,int id) {
-							
-							dialog.cancel();
-						}
-					  });
-	 					 
-					// show it
-					alertDialog.show();
+		 Utils.createDialog(this, "Try again", "Your username or password is wrong", false); 
 	}
 
 	@Override
-	public void printStings(List<Sting> stingList) {
+	public void printContent(List<Object> stingList) {
 		// TODO Auto-generated method stub
 		
 	}
 	 
+	public void signup(View view){
+		Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
+		startActivity(i);
+	}
 
+	@Override
+	public void goToLogin() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void goToStings() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
 }
