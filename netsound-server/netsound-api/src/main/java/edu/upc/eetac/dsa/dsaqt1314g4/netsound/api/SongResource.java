@@ -244,7 +244,7 @@ public class SongResource {
 				song.setAlbum(rs.getString("album_name"));
 				song.setDescription(rs.getString("description"));
 				song.setStyle(rs.getString("style"));
-				song.setDate(new Date().getTime());
+				song.setDate(rs.getTimestamp("last_modified").getTime());
 				song.setScore(rs.getString("score"));
 				song.setSongURL(app.getProperties().get("SongBaseURL")
 						+ song.getSongid());
