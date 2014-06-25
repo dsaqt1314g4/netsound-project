@@ -13,8 +13,10 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import edu.upc.eetac.dsa.dsaqt1314g4.netsound.model.User;
@@ -24,6 +26,7 @@ public class PublishStingActivity extends Activity implements AsyncResponse{
 
 	public static int PLAYLIST_POST = 0;
 	public static int SONG_POST = 1;
+	public static int STING_POST = 2;
 	
 	private int whichPost;
 	private User user;
@@ -31,6 +34,7 @@ public class PublishStingActivity extends Activity implements AsyncResponse{
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+	    final Button btn = (Button)findViewById(R.id.btn_publish);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_publish_sting);
 
@@ -41,8 +45,26 @@ public class PublishStingActivity extends Activity implements AsyncResponse{
 		user = (User) this.getIntent().getExtras().get("user");
 		whichPost = (int) this.getIntent().getExtras().get("whichPost");
 		contentMap = (HashMap<String, String>) this.getIntent().getExtras().get("contentMap");
-		
+		if(whichPost!=2){
 		printSelect();
+		}
+		btn.setOnClickListener(new OnClickListener() {	
+			
+			@Override
+			public void onClick(View v) {
+				 String urlString = "";
+				 EditText stingText = (EditText) findViewById(R.id.sting);
+				 String sting = stingText.getText().toString(); 
+				 urlString= MainActivity.BASE_URL +"profile/stings";
+				 String urlParameters = "{\"username\":\""+user.getUsername()+"\",\"content\":\""+sting+"\"}";		
+				 prova(urlString,urlParameters);
+			}
+		});
+	}
+	private void prova(String urlString,String urlParameters){
+		
+		 new StingAPI(this).execute(urlString, urlParameters);	
+
 	}
 
 	private void printSelect() {
@@ -101,9 +123,10 @@ public class PublishStingActivity extends Activity implements AsyncResponse{
 	
 	public void publish(View view){
 		
+		 String urlString = "";
 		 EditText stingText = (EditText) findViewById(R.id.sting);
 		 String sting = stingText.getText().toString(); 
-		 
+		 if(whichPost!=2){
 		 Spinner spinner = (Spinner) findViewById(R.id.content_spinner);
 		 String contentName = spinner.getSelectedItem().toString();
 		 String id = "";
@@ -113,15 +136,20 @@ public class PublishStingActivity extends Activity implements AsyncResponse{
 	            	id = content.getKey();
 	            }
 	     }
-		 
-		 String urlString = "";
-		 
 		 if(whichPost==SONG_POST){
 			 urlString= MainActivity.BASE_URL +"songs/"+id+"/stings";
 		 }
-		 else{
+		 else
+			 if(whichPost==PLAYLIST_POST){
 			 urlString= MainActivity.BASE_URL +"playlist/"+id+"/stings";
+			 }
+		 
 		 }
+		 
+			 if(whichPost==2){
+			 urlString= MainActivity.BASE_URL +"profile/stings";
+
+			 }
 			 
 		 String urlParameters = "{\"username\":\""+user.getUsername()+"\",\"content\":\""+sting+"\"}";		
 		 new StingAPI(this).execute(urlString, urlParameters);	

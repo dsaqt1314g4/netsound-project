@@ -2,6 +2,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.netsound_android.MyStingsActivity" >
 
+<item android:id="@+id/action_publish"
+          android:icon="@drawable/ic_action_edit"
+          android:title="@string/action_publish"
+          android:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_logout"
         android:orderInCategory="100"

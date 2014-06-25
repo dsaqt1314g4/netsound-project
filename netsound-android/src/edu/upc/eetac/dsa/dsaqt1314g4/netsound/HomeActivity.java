@@ -36,7 +36,7 @@ public class HomeActivity extends Activity implements AsyncResponse{
 
 		//in your OnCreate() method
 		user = (User) this.getIntent().getExtras().get("user");
-		helloText.setText("Hello "+user.getName());
+		helloText.setText("                Hello "+user.getName());
 		
 		loadStings(user);		
 	}
@@ -162,7 +162,7 @@ public class HomeActivity extends Activity implements AsyncResponse{
 			for(Object obj : stingList){
 				TableRow row=new TableRow(this);
 				 TextView username=new TextView(this);
-				 username.setText(""+((Sting) obj).getUsername());
+				 username.setText(""+((Sting) obj).getUsername()+"    ");
 				 
 				 TextView content=new TextView(this);
 				 content.setText(""+((Sting) obj).getContent());
